@@ -1,4 +1,3 @@
-import React from "react";
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/ui/Button";

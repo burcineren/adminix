@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
     useReactTable,
     getCoreRowModel,
@@ -84,7 +84,6 @@ export function DataTable({
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
     const visibleFields = getTableFields(resource.fields);
-    const pk = resource.primaryKey ?? "id";
     const permissions = resource.permissions ?? {};
 
     const columns = useMemo<ColumnDef<Record<string, unknown>>[]>(() => {

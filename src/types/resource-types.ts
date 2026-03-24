@@ -1,27 +1,11 @@
 import type { ZodSchema } from "zod";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ComponentType } from "react";
+import type { InferredType, FilterType } from "@/core/schema/types";
 
 // ── Field Types ──────────────────────────────────────────────────────────────
 
-export type FieldType =
-  | "text"
-  | "number"
-  | "email"
-  | "password"
-  | "url"
-  | "textarea"
-  | "select"
-  | "multiselect"
-  | "boolean"
-  | "date"
-  | "datetime"
-  | "image"
-  | "file"
-  | "color"
-  | "json"
-  | "relation"
-  | "custom";
+export type FieldType = InferredType;
 
 export interface SelectOption {
   label: string;
@@ -49,6 +33,7 @@ export interface FieldDefinition {
   // Table behavior
   sortable?: boolean;
   filterable?: boolean;
+  filter?: FilterType;
   searchable?: boolean;
   hidden?: boolean;
   showInTable?: boolean;
@@ -151,12 +136,24 @@ export interface ResourceDefinition {
   filterable?: boolean;
   exportable?: boolean;
   primaryKey?: string;
+  expandable?: boolean;
+  expandedComponent?: ComponentType<{ data: Record<string, unknown> }>;
 }
 
 // ── Admin Panel Props ─────────────────────────────────────────────────────────
 
 export interface AdminPanelProps {
-  resources: ResourceDefinition[];
+  // Mult-resource mode
+  resources?: ResourceDefinition[];
+  
+  // Single-resource shorthand
+  name?: string;
+  endpoint?: string;
+  fields?: FieldDefinition[];
+  permissions?: ResourcePermissions;
+  label?: string;
+
+  // General config
   title?: string;
   logo?: React.ReactNode;
   plugins?: AdminPlugin[];

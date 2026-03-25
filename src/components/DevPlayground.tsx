@@ -185,19 +185,10 @@ export function DevPlayground() {
             )}
 
             {/* 2. Preview Area */}
-            <main className="flex-1 relative bg-[hsl(var(--muted)/0.1)] overflow-hidden">
-                <div className="absolute top-4 left-6 z-10 flex items-center gap-2">
-                    <div className="flex h-8 items-center gap-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 shadow-sm">
-                        <Monitor className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Live Preview</span>
-                    </div>
-                    {/* Visual separation */}
-                    <div className="h-4 w-[1px] bg-[hsl(var(--border))]" />
-                    <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Editing: {resource.name}</span>
-                </div>
-
-                <div className="h-full w-full overflow-auto">
-                    <div key={resource.name} className="h-full">
+            <main className="flex-1 relative bg-[hsl(var(--muted)/0.05)] overflow-hidden flex flex-col">
+                <div className="h-full w-full overflow-hidden relative">
+                    {/* AdminPanel is now absolute-positioned, so it will fill this relative container */}
+                    <div key={resource.name} className="absolute inset-0">
                         <AdminPanel
                             resources={[resource]}
                             showDashboard={false}
@@ -206,8 +197,16 @@ export function DevPlayground() {
                     </div>
                 </div>
 
+                {/* Status Indicators */}
+                <div className="absolute top-4 left-6 pointer-events-none z-20 flex flex-col gap-2">
+                    <div className="flex h-7 items-center gap-2 rounded-full border border-[hsl(var(--primary)/0.2)] bg-[hsl(var(--background)/0.8)] backdrop-blur px-3 shadow-lg">
+                        <Monitor className="h-3 w-3 text-[hsl(var(--primary))]" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-[hsl(var(--primary))]">Live Preview</span>
+                    </div>
+                </div>
+
                 {/* Status Indicator (Bottom Right) */}
-                <div className="absolute bottom-6 right-6 pointer-events-none">
+                <div className="absolute bottom-6 right-6 pointer-events-none z-20">
                     <div className="flex items-center gap-3 rounded-full bg-[hsl(var(--background))/0.8] backdrop-blur border border-[hsl(var(--border))] px-4 py-2 shadow-2xl">
                         <div className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                         <span className="text-[10px] font-bold uppercase tracking-widest">Engine Reactive</span>

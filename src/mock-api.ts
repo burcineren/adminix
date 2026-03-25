@@ -28,6 +28,16 @@ export interface Order {
   createdAt: string;
 }
 
+export interface Setting {
+  id: string;
+  key: string;
+  value: string;
+  description: string;
+  category: string;
+  isPublic: boolean;
+  lastUpdated: string;
+}
+
 // ── In-memory stores ───────────────────────────────────────────────────────────
 
 let products: Product[] = [
@@ -63,6 +73,14 @@ let orders: Order[] = [
   { id: 6, customer: "Frank Miller", total: 329, status: "cancelled", createdAt: "2024-03-14" },
   { id: 7, customer: "Grace Lee", total: 178, status: "completed", createdAt: "2024-03-16" },
   { id: 8, customer: "Henry Wilson", total: 899, status: "processing", createdAt: "2024-03-18" },
+];
+
+const settings: Setting[] = [
+  { id: "1", key: "site_name", value: "AutoAdmin Demo", description: "The title of the website", category: "general", isPublic: true, lastUpdated: "2024-03-24" },
+  { id: "2", key: "admin_email", value: "admin@autoadmin.io", description: "Primary contact email", category: "general", isPublic: false, lastUpdated: "2024-03-24" },
+  { id: "3", key: "enable_signup", value: "true", description: "Allow new users to register", category: "security", isPublic: true, lastUpdated: "2024-03-20" },
+  { id: "4", key: "maintenance_mode", value: "false", description: "Disable site for maintenance", category: "security", isPublic: false, lastUpdated: "2024-03-22" },
+  { id: "5", key: "max_upload_size", value: "10", description: "Limit in MB", category: "performance", isPublic: true, lastUpdated: "2024-03-15" },
 ];
 
 let nextId = 100;
@@ -127,7 +145,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
       return {};
     }
   };
-  const getId = (_prefix: string) => {
+  const getId = () => {
     const seg = url.replace(/\?.*/, "").split("/").pop() ?? "";
     return isNaN(Number(seg)) ? seg : Number(seg);
   };
@@ -152,7 +170,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
       return json(item, 201);
     }
     if (method === "PUT") {
-      const id = getId("/api/products/");
+      const id = getId();
       const body = getBody();
       products = products.map((p) => (p.id === id ? { ...p, ...body } : p));
       return json(products.find((p) => p.id === id));
@@ -164,7 +182,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
         products = products.filter((p) => !ids.includes(p.id));
         return json({ success: true });
       }
-      const id = getId("/api/products/");
+      const id = getId();
       products = products.filter((p) => p.id !== id);
       return json({ success: true });
     }
@@ -184,7 +202,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
       return json(item, 201);
     }
     if (method === "PUT") {
-      const id = getId("/api/users/");
+      const id = getId();
       const body = getBody();
       users = users.map((u) => (u.id === id ? { ...u, ...body } : u));
       return json(users.find((u) => u.id === id));
@@ -196,7 +214,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
         users = users.filter((u) => !ids.includes(u.id));
         return json({ success: true });
       }
-      const id = getId("/api/users/");
+      const id = getId();
       users = users.filter((u) => u.id !== id);
       return json({ success: true });
     }
@@ -216,7 +234,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
       return json(item, 201);
     }
     if (method === "PUT") {
-      const id = getId("/api/orders/");
+      const id = getId();
       const body = getBody();
       orders = orders.map((o) => (o.id === id ? { ...o, ...body } : o));
       return json(orders.find((o) => o.id === id));
@@ -228,10 +246,15 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
         orders = orders.filter((o) => !ids.includes(o.id));
         return json({ success: true });
       }
-      const id = getId("/api/orders/");
+      const id = getId();
       orders = orders.filter((o) => o.id !== id);
       return json({ success: true });
     }
+  }
+
+  if (url.includes("/api/settings")) {
+    await delay(100);
+    return json(paginate(settings as unknown as Record<string, unknown>[], getParams()));
   }
 
   return originalFetch(input, init);

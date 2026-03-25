@@ -1,30 +1,104 @@
 // Public library entry point
 export { AdminPanel } from "./components/AdminPanel";
-export { createResource } from "./utils/schema-utils";
+export { ResourceView } from "./components/ResourceView";
+export { DataTable } from "./components/DataTable";
+export { FormGenerator } from "./components/FormGenerator";
+export { GlobalModalManager } from "./components/GlobalModalManager";
+export { FilterBar } from "./components/FilterBar";
+export { SearchBar } from "./components/SearchBar";
+export { DevPlayground } from "./components/DevPlayground";
 export { useResource } from "./hooks/useResource";
 export { useFilters } from "./hooks/useFilters";
 export { usePagination } from "./hooks/usePagination";
+export { useCrudActions } from "./hooks/useCrudActions";
 export { useAdminStore } from "./core/store";
 
-// Components (for advanced usage)
-export { DataTable } from "./components/DataTable";
-export { FilterBar } from "./components/FilterBar";
-export { SearchBar } from "./components/SearchBar";
-export { Pagination } from "./components/Pagination";
-export { BulkActions } from "./components/BulkActions";
-export { CreateModal } from "./components/CreateModal";
-export { EditModal } from "./components/EditModal";
-export { DeleteDialog } from "./components/DeleteDialog";
-export { ResourceView } from "./components/ResourceView";
-export { FormGenerator } from "./components/FormGenerator";
+// API Client
+export {
+  apiClient,
+  request,
+  buildUrl,
+  buildQueryString,
+  resolveEndpoints,
+  normalizePaginatedResponse,
+  addRequestInterceptor,
+  addResponseInterceptor,
+  clearInterceptors,
+} from "./core/api-client";
 
-// UI primitives
-export { Button } from "./ui/Button";
-export { Input, Textarea } from "./ui/Input";
-export { Select } from "./ui/Select";
-export { Switch, Badge, Card, CardHeader, CardContent, Skeleton, Separator } from "./ui/Misc";
-export { Modal } from "./ui/Modal";
-export { Dropdown } from "./ui/Dropdown";
+// Data Layer Types
+export type {
+  HttpMethod,
+  RequestOptions,
+  ApiResponse,
+  ApiError,
+  PaginatedResponse,
+  ListQueryParams,
+  RequestInterceptor,
+  ResponseInterceptor,
+  ResourceEndpoints,
+} from "./core/api-client";
+
+export type {
+  UseResourceReturn,
+  UseResourceOptions,
+  ResourceListState,
+  SortState,
+} from "./hooks/useResource";
+
+export type {
+  UsePaginationReturn,
+  PaginationState,
+  PaginationActions,
+} from "./hooks/usePagination";
+
+export type {
+  FiltersReturn,
+  FilterState,
+  FilterValue,
+  UseFiltersOptions,
+} from "./hooks/useFilters";
+
+export type {
+  UseCrudActionsReturn,
+  CrudCallbacks,
+  CrudMutationState,
+  CreatePayload,
+  UpdatePayload,
+} from "./hooks/useCrudActions";
+
+// Schema Engine (core)
+export {
+  generateUISchema,
+  inferFieldsFromData,
+  resolveComponentMapping,
+  registerComponentMapper,
+  clearComponentMappers,
+  registerSchemaPlugin,
+  unregisterSchemaPlugin,
+  clearSchemaPlugins,
+  getRegisteredPlugins,
+  createSchemaPlugin,
+  getComponentForType,
+  getFilterForType,
+  getDefaultMappings,
+} from "./core/schema";
+
+// Schema Engine Types
+export type {
+  UISchema,
+  UISchemaField,
+  UIComponentName,
+  BuiltinComponent,
+  FilterType,
+  InferredType,
+  UISelectOption as UISchemaSelectOption,
+  ResourceConfig,
+  SchemaFieldOverride,
+  SchemaPlugin,
+  SchemaPluginContext,
+  GenerateUISchemaOptions,
+} from "./core/schema";
 
 // Types
 export type {

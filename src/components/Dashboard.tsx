@@ -10,11 +10,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 
+import type { ComponentType } from "react";
+
 interface StatCardProps {
     title: string;
     value: string;
     description: string;
-    icon: any;
+    icon: ComponentType<{ className?: string }>;
     trend?: {
         value: string;
         isPositive: boolean;

@@ -23,7 +23,7 @@ const queryClient = new QueryClient({
 // ── Inner panel (accesses store) ───────────────────────────────────────────────
 
 function AdminPanelInner({
-    resources: propsResources = [],
+    resources: propsResources,
     name,
     endpoint,
     fields,
@@ -35,12 +35,16 @@ function AdminPanelInner({
     defaultDarkMode = false,
     showDashboard: propShowDashboard,
 }: AdminPanelProps) {
-    const { activeResource, setActiveResource, setResources, darkMode, setDarkMode, sidebarOpen } =
-        useAdminStore();
+    const activeResource = useAdminStore((state) => state.activeResource);
+    const setActiveResource = useAdminStore((state) => state.setActiveResource);
+    const setResources = useAdminStore((state) => state.setResources);
+    const darkMode = useAdminStore((state) => state.darkMode);
+    const setDarkMode = useAdminStore((state) => state.setDarkMode);
+    const sidebarOpen = useAdminStore((state) => state.sidebarOpen);
 
     // 1. Normalize resources: Merge explicit array with shorthand props
     const normalizedResources = useMemo<ResourceDefinition[]>(() => {
-        const list: ResourceDefinition[] = [...propsResources];
+        const list: ResourceDefinition[] = propsResources ? [...propsResources] : [];
 
         if (endpoint) {
             const resourceName = name ?? endpoint.split("/").pop() ?? "resource";
@@ -60,16 +64,22 @@ function AdminPanelInner({
     }, [propsResources, name, endpoint, fields, permissions, propLabel]);
 
     // 2. Determine initial dashboard visibility
-    // If only one resource and no explicit dashboard preference, default to false
     const showDashboard = propShowDashboard ?? normalizedResources.length > 1;
 
     // ── Synchronization ──────────────────────────────────────────────────────────
 
+    // Sync resources to store
     useEffect(() => {
         setResources(normalizedResources);
-        setDarkMode(defaultDarkMode);
+    }, [normalizedResources, setResources]);
 
-        // Initial navigation
+    // Initial dark mode only
+    useEffect(() => {
+        setDarkMode(defaultDarkMode);
+    }, [defaultDarkMode, setDarkMode]);
+
+    // Initial navigation
+    useEffect(() => {
         if (!activeResource) {
             if (showDashboard) {
                 setActiveResource("dashboard");
@@ -77,7 +87,7 @@ function AdminPanelInner({
                 setActiveResource(normalizedResources[0]!.name);
             }
         }
-    }, [normalizedResources, defaultDarkMode, showDashboard, setResources, setDarkMode, setActiveResource, activeResource]);
+    }, [activeResource, normalizedResources, showDashboard, setActiveResource]);
 
     // Sync dark mode class on <html>
     useEffect(() => {
@@ -92,7 +102,7 @@ function AdminPanelInner({
     const isDashboard = activeResource === "dashboard";
 
     return (
-        <div className={cn("min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]")}>
+        <div className={cn("relative h-full w-full overflow-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))]")}>
             {/* Core engine components */}
             <GlobalModalManager />
 

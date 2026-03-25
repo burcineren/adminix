@@ -1,51 +1,73 @@
 import { useForm, Controller, type ControllerRenderProps } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import type { FieldDefinition } from "@/types/resource-types";
+import type { UISchemaField } from "@/core/schema/types";
 import { Input, Textarea } from "@/ui/Input";
 import { Select } from "@/ui/Select";
 import { Switch } from "@/ui/Misc";
 import { Button } from "@/ui/Button";
-import { getCreateFields, getEditFields, getFieldLabel } from "@/utils/schema-utils";
+import { useI18n } from "@/core/i18n";
+import { cn } from "@/utils/cn";
 
 // ── Schema Builder ─────────────────────────────────────────────────────────────
 
-function buildZodSchema(fields: FieldDefinition[]): z.ZodObject<Record<string, z.ZodTypeAny>> {
+/**
+ * Dynamically builds a Zod validation schema from the UI schema fields.
+ * Handles automatic coercion for numbers, emails, and optionality.
+ */
+function buildZodSchema(fields: UISchemaField[]): z.ZodObject<Record<string, z.ZodTypeAny>> {
     const shape: Record<string, z.ZodTypeAny> = {};
 
     for (const field of fields) {
+        // If the field already has a validation schema, use it directly
         if (field.validation) {
             shape[field.name] = field.validation;
             continue;
         }
+
         let schema: z.ZodTypeAny;
+
         switch (field.type) {
             case "number":
+            case "integer":
                 schema = z.coerce.number();
-                if (!field.required) schema = schema.optional();
+                if (!field.required) schema = schema.nullish();
                 break;
             case "boolean":
-                schema = z.boolean().optional();
+                schema = z.boolean().default(false);
                 break;
             case "email":
-                schema = z.string().email();
-                if (!field.required) schema = schema.optional();
+                schema = z.string().email(`${field.label} must be a valid email`);
+                if (!field.required) schema = schema.optional().or(z.literal(''));
                 break;
             case "url":
-                schema = z.string().url();
-                if (!field.required) schema = schema.optional();
+                schema = z.string().url(`${field.label} must be a valid URL`);
+                if (!field.required) schema = schema.optional().or(z.literal(''));
                 break;
+            case "enum":
             case "select":
                 schema = z.string();
                 if (!field.required) schema = schema.optional();
                 break;
             case "multiselect":
-                schema = z.array(z.string());
-                if (!field.required) schema = schema.optional();
+            case "array":
+                schema = z.array(z.any());
+                if (!field.required) schema = schema.default([]);
+                break;
+            case "date":
+            case "datetime":
+                schema = z.string().min(1, `${field.label} is required`);
+                if (!field.required) schema = schema.optional().or(z.literal(''));
                 break;
             default:
-                schema = field.required ? z.string().min(1, `${getFieldLabel(field)} is required`) : z.string().optional();
+                schema = z.string();
+                if (field.required) {
+                    schema = (schema as z.ZodString).min(1, `${field.label} is required`);
+                } else {
+                    schema = schema.optional();
+                }
         }
+
         shape[field.name] = schema;
     }
     return z.object(shape);
@@ -53,126 +75,100 @@ function buildZodSchema(fields: FieldDefinition[]): z.ZodObject<Record<string, z
 
 // ── Field Renderer ─────────────────────────────────────────────────────────────
 
-function FieldRenderer({
+/**
+ * Responsibility: Maps a UI schema field to its corresponding visual component.
+ */
+export function FieldRenderer({
     field,
     controllerField,
     error,
 }: {
-    field: FieldDefinition;
+    field: UISchemaField;
     controllerField: ControllerRenderProps<Record<string, unknown>>;
     error?: string;
 }) {
-    const label = getFieldLabel(field);
+    // 1. Check for custom render function in schema
+    if (field.renderForm) {
+        return <>{field.renderForm(field, controllerField)}</>;
+    }
 
-    switch (field.type) {
-        case "text":
-        case "email":
-        case "url":
-        case "password":
-            return (
-                <Input
-                    {...controllerField}
-                    value={controllerField.value as string ?? ""}
-                    type={field.type}
-                    label={label}
-                    placeholder={field.placeholder ?? `Enter ${label.toLowerCase()}…`}
-                    error={error}
-                    required={field.required}
-                    description={field.description}
-                />
-            );
+    const commonProps = {
+        label: field.label,
+        error: error,
+        required: field.required,
+        description: field.description,
+        placeholder: field.placeholder,
+        ...controllerField,
+        value: (controllerField.value as string) ?? "",
+    };
 
-        case "number":
-            return (
-                <Input
-                    {...controllerField}
-                    value={controllerField.value as string ?? ""}
-                    type="number"
-                    label={label}
-                    placeholder={field.placeholder ?? "0"}
-                    error={error}
-                    required={field.required}
-                />
-            );
+    // 2. Built-in component mapping
+    switch (field.component) {
+        case "NumberInput":
+            return <Input {...commonProps} type="number" />;
 
-        case "textarea":
-            return (
-                <Textarea
-                    {...controllerField}
-                    value={controllerField.value as string ?? ""}
-                    label={label}
-                    placeholder={field.placeholder ?? `Enter ${label.toLowerCase()}…`}
-                    error={error}
-                    required={field.required}
-                />
-            );
+        case "EmailInput":
+            return <Input {...commonProps} type="email" />;
 
-        case "select":
+        case "PasswordInput":
+            return <Input {...commonProps} type="password" />;
+
+        case "UrlInput":
+            return <Input {...commonProps} type="url" />;
+
+        case "TextareaInput":
+            return <Textarea {...commonProps} />;
+
+        case "SelectInput":
             return (
                 <Select
+                    {...commonProps}
                     options={field.options ?? []}
-                    value={controllerField.value as string}
-                    onChange={controllerField.onChange}
-                    label={label}
-                    placeholder={field.placeholder ?? `Select ${label.toLowerCase()}…`}
-                    error={error}
-                    required={field.required}
+                    onChange={(val) => controllerField.onChange(val)}
                 />
             );
 
-        case "boolean":
+        case "BooleanSwitch":
             return (
-                <div className="flex items-center justify-between rounded-lg border border-[hsl(var(--border))] p-3">
-                    <div>
-                        <p className="text-sm font-medium">{label}</p>
+                <div className={cn(
+                    "flex items-center justify-between rounded-lg border p-4 transition-colors",
+                    error ? "border-red-500 bg-red-50/50" : "border-[hsl(var(--border))]"
+                )}>
+                    <div className="space-y-0.5">
+                        <label className="text-sm font-semibold">{field.label}</label>
                         {field.description && (
                             <p className="text-xs text-[hsl(var(--muted-foreground))]">{field.description}</p>
                         )}
                     </div>
                     <Switch
-                        checked={controllerField.value as boolean ?? false}
+                        checked={!!controllerField.value}
                         onCheckedChange={controllerField.onChange}
                     />
                 </div>
             );
 
-        case "date":
-        case "datetime":
-            return (
-                <Input
-                    {...controllerField}
-                    value={controllerField.value as string ?? ""}
-                    type={field.type === "datetime" ? "datetime-local" : "date"}
-                    label={label}
-                    error={error}
-                    required={field.required}
-                />
-            );
+        case "DatePicker":
+            return <Input {...commonProps} type="date" />;
 
+        case "DateTimePicker":
+            return <Input {...commonProps} type="datetime-local" />;
+
+        case "TextInput":
         default:
-            return (
-                <Input
-                    {...controllerField}
-                    value={controllerField.value as string ?? ""}
-                    label={label}
-                    error={error}
-                />
-            );
+            return <Input {...commonProps} type="text" />;
     }
 }
 
 // ── Form Generator ─────────────────────────────────────────────────────────────
 
 interface FormGeneratorProps {
-    fields: FieldDefinition[];
+    fields: UISchemaField[];
     mode: "create" | "edit";
     initialValues?: Record<string, unknown>;
     onSubmit: (data: Record<string, unknown>) => void | Promise<void>;
     onCancel?: () => void;
     loading?: boolean;
 }
-
-import { useI18n } from "@/core/i18n";
 
 export function FormGenerator({
     fields,
@@ -183,45 +179,63 @@ export function FormGenerator({
     loading,
 }: FormGeneratorProps) {
     const { t } = useI18n();
-    const visibleFields = mode === "create" ? getCreateFields(fields) : getEditFields(fields);
-    const schema = buildZodSchema(visibleFields);
+
+    // Only render fields that are marked for visibility in the current mode
+    const visibleFields = fields.filter((f) =>
+        mode === "create" ? f.showInCreate : f.showInEdit
+    );
+
+    // Build validator once
+    const validationSchema = buildZodSchema(visibleFields);
 
     const {
         control,
         handleSubmit,
         formState: { errors },
     } = useForm<Record<string, unknown>>({
-        resolver: zodResolver(schema),
-        defaultValues: initialValues,
+        resolver: zodResolver(validationSchema),
+        values: initialValues, // Use 'values' to stay reactive to remote changes
     });
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {visibleFields.map((field) => (
-                <Controller
-                    key={field.name}
-                    name={field.name}
-                    control={control}
-                    defaultValue={field.defaultValue ?? (field.type === "boolean" ? false : "")}
-                    render={({ field: controllerField }) => (
-                        <FieldRenderer
-                            field={field}
-                            controllerField={controllerField as ControllerRenderProps<Record<string, unknown>>}
-                            error={errors[field.name]?.message as string | undefined}
-                        />
-                    )}
-                />
-            ))}
-            <div className="flex items-center justify-end gap-2 pt-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 animate-fade-in">
+            <div className="space-y-4">
+                {visibleFields.map((field) => (
+                    <Controller
+                        key={field.name}
+                        name={field.name}
+                        control={control}
+                        render={({ field: controllerField }) => (
+                            <FieldRenderer
+                                field={field}
+                                controllerField={controllerField as ControllerRenderProps<Record<string, unknown>>}
+                                error={errors[field.name]?.message as string | undefined}
+                            />
+                        )}
+                    />
+                ))}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-[hsl(var(--border))]">
                 {onCancel && (
-                    <Button type="button" variant="outline" onClick={onCancel}>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={onCancel}
+                        disabled={loading}
+                    >
                         {t.common.cancel}
                     </Button>
                 )}
-                <Button type="submit" loading={loading}>
+                <Button
+                    type="submit"
+                    loading={loading}
+                    className="min-w-[100px]"
+                >
                     {mode === "create" ? t.common.create : t.common.save}
                 </Button>
             </div>
         </form>
     );
 }
+

@@ -1,16 +1,18 @@
 import { Modal } from "@/ui/Modal";
 import { FormGenerator } from "@/components/FormGenerator";
 import type { ResourceDefinition } from "@/types/resource-types";
+import type { UISchemaField } from "@/core/schema/types";
 
 interface CreateModalProps {
     open: boolean;
     onClose: () => void;
     resource: ResourceDefinition;
+    fields: UISchemaField[];
     onSubmit: (data: Record<string, unknown>) => void | Promise<void>;
     loading?: boolean;
 }
 
-export function CreateModal({ open, onClose, resource, onSubmit, loading }: CreateModalProps) {
+export function CreateModal({ open, onClose, resource, fields, onSubmit, loading }: CreateModalProps) {
     const label = resource.label ?? resource.name;
     return (
         <Modal
@@ -21,7 +23,7 @@ export function CreateModal({ open, onClose, resource, onSubmit, loading }: Crea
             size="lg"
         >
             <FormGenerator
-                fields={resource.fields}
+                fields={fields}
                 mode="create"
                 onSubmit={async (data) => {
                     await onSubmit(data);

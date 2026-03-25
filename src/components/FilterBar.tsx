@@ -1,15 +1,14 @@
-import { Filter, X } from "lucide-react";
-import type { FieldDefinition } from "@/types/resource-types";
+import { Filter, X, ArrowRight, Calendar, Hash } from "lucide-react";
+import type { UISchemaField } from "@/core/schema/types";
 import { Input } from "@/ui/Input";
 import { Select } from "@/ui/Select";
 import { Switch } from "@/ui/Misc";
 import { Button } from "@/ui/Button";
 import type { FilterState } from "@/hooks/useFilters";
-import { getFieldLabel } from "@/utils/schema-utils";
 import { cn } from "@/utils/cn";
 
 interface FilterBarProps {
-    fields: FieldDefinition[];
+    fields: UISchemaField[];
     filters: FilterState;
     onFilterChange: (name: string, value: unknown) => void;
     onClear: () => void;
@@ -24,32 +23,41 @@ export function FilterBar({
     hasActiveFilters,
 }: FilterBarProps) {
     const filterableFields = fields.filter(
-        (f) => f.filterable !== false && !f.hidden
+        (f) => f.filter !== "none" && !f.hidden
     );
 
     if (filterableFields.length === 0) return null;
 
     return (
         <div className={cn(
-            "flex flex-wrap items-end gap-3 rounded-lg border border-[hsl(var(--border))]",
-            "bg-[hsl(var(--muted)/0.3)] p-4 animate-slide-in"
+            "flex flex-wrap items-center gap-4 rounded-xl border border-[hsl(var(--border))]",
+            "bg-[hsl(var(--muted)/0.2)] p-4 animate-slide-in shadow-sm"
         )}>
-            <div className="flex items-center gap-2 text-sm font-medium text-[hsl(var(--muted-foreground))] shrink-0">
-                <Filter className="h-4 w-4" />
+            <div className="flex items-center gap-2 text-sm font-semibold text-[hsl(var(--foreground))] shrink-0 border-r border-[hsl(var(--border))] pr-4 mr-1">
+                <Filter className="h-4 w-4 text-[hsl(var(--primary))]" />
                 Filters
             </div>
-            {filterableFields.map((field) => (
-                <FilterField
-                    key={field.name}
-                    field={field}
-                    value={filters[field.name]}
-                    onChange={(val) => onFilterChange(field.name, val)}
-                />
-            ))}
+
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+                {filterableFields.map((field) => (
+                    <FilterField
+                        key={field.name}
+                        field={field}
+                        value={filters[field.name]}
+                        onChange={(val) => onFilterChange(field.name, val)}
+                    />
+                ))}
+            </div>
+
             {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={onClear} className="gap-1.5 text-[hsl(var(--muted-foreground))] ml-auto">
-                    <X className="h-3.5 w-3.5" />
-                    Clear filters
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onClear}
+                    className="h-8 gap-1.5 text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--destructive))] ml-auto"
+                >
+                    <X className="h-3 w-3" />
+                    Reset
                 </Button>
             )}
         </div>
@@ -61,103 +69,115 @@ function FilterField({
     value,
     onChange,
 }: {
-    field: FieldDefinition;
+    field: UISchemaField;
     value: unknown;
     onChange: (val: unknown) => void;
 }) {
-    const label = getFieldLabel(field);
+    const label = field.label;
 
-    switch (field.type) {
+    switch (field.filter) {
         case "select":
             return (
-                <div className="min-w-[160px]">
+                <div className="min-w-[140px]">
                     <Select
                         options={[{ label: `All ${label}`, value: "__all__" }, ...(field.options ?? [])]}
                         value={value ? String(value) : "__all__"}
                         onChange={(v) => onChange(v === "__all__" ? undefined : v)}
                         label={label}
+                        className="h-9"
                     />
                 </div>
             );
-
 
         case "boolean":
             return (
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-[hsl(var(--muted-foreground))]">{label}:</span>
-                    <Switch
-                        checked={value as boolean ?? false}
-                        onCheckedChange={(v) => onChange(v ? true : undefined)}
-                        label={value ? "Yes" : "Any"}
-                    />
+                <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{label}</span>
+                    <div className="flex items-center h-9 px-3 border border-[hsl(var(--input))] rounded-md bg-[hsl(var(--background))] gap-3">
+                        <Switch
+                            checked={value as boolean ?? false}
+                            onCheckedChange={(v) => onChange(v ? true : undefined)}
+                        />
+                        <span className="text-sm font-medium">
+                            {value === true ? "Yes" : "Any"}
+                        </span>
+                    </div>
                 </div>
             );
 
-        case "number":
+        case "range":
             return (
-                <div className="flex items-end gap-2">
-                    <div className="w-28">
+                <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-[hsl(var(--muted-foreground))] flex items-center gap-1">
+                        <Hash className="h-3 w-3" />
+                        {label} Range
+                    </span>
+                    <div className="flex items-center gap-2">
                         <Input
                             type="number"
-                            label={`${label} min`}
-                            value={((value as { min?: number })?.min ?? "") as string}
+                            value={((value as Record<string, unknown>)?.min ?? "") as string}
                             onChange={(e) =>
                                 onChange({ ...(value as object ?? {}), min: e.target.value || undefined })
                             }
                             placeholder="Min"
+                            className="w-20 h-9"
                         />
-                    </div>
-                    <div className="w-28">
+                        <ArrowRight className="h-3 w-3 text-[hsl(var(--muted-foreground))]" />
                         <Input
                             type="number"
-                            label={`${label} max`}
-                            value={((value as { max?: number })?.max ?? "") as string}
+                            value={((value as Record<string, unknown>)?.max ?? "") as string}
                             onChange={(e) =>
                                 onChange({ ...(value as object ?? {}), max: e.target.value || undefined })
                             }
                             placeholder="Max"
+                            className="w-20 h-9"
                         />
                     </div>
                 </div>
             );
 
-        case "date":
-        case "datetime":
+        case "date-range":
             return (
-                <div className="flex items-end gap-2">
-                    <div className="w-40">
+                <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-[hsl(var(--muted-foreground))] flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {label} Period
+                    </span>
+                    <div className="flex items-center gap-2">
                         <Input
                             type="date"
-                            label={`${label} from`}
-                            value={((value as { from?: string })?.from ?? "") as string}
+                            value={((value as Record<string, unknown>)?.from ?? "") as string}
                             onChange={(e) =>
                                 onChange({ ...(value as object ?? {}), from: e.target.value || undefined })
                             }
+                            className="w-36 h-9"
                         />
-                    </div>
-                    <div className="w-40">
+                        <ArrowRight className="h-3 w-3 text-[hsl(var(--muted-foreground))]" />
                         <Input
                             type="date"
-                            label={`${label} to`}
-                            value={((value as { to?: string })?.to ?? "") as string}
+                            value={((value as Record<string, unknown>)?.to ?? "") as string}
                             onChange={(e) =>
                                 onChange({ ...(value as object ?? {}), to: e.target.value || undefined })
                             }
+                            className="w-36 h-9"
                         />
                     </div>
                 </div>
             );
 
+        case "search":
         default:
             return (
-                <div className="min-w-[160px]">
+                <div className="min-w-[180px]">
                     <Input
                         label={label}
                         value={value as string ?? ""}
                         onChange={(e) => onChange(e.target.value || undefined)}
-                        placeholder={`Filter by ${label.toLowerCase()}…`}
+                        placeholder={`Search ${label.toLowerCase()}…`}
+                        className="h-9"
                     />
                 </div>
             );
     }
 }
+

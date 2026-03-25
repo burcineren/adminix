@@ -4,6 +4,7 @@ import { CreateModal } from "@/components/CreateModal";
 import { EditModal } from "@/components/EditModal";
 import { DeleteDialog } from "@/components/DeleteDialog";
 import { useCallback } from "react";
+import type { ResourceDefinition } from "@/types/resource-types";
 
 /**
  * GlobalModalManager
@@ -13,9 +14,26 @@ import { useCallback } from "react";
  * ensure modal state is truly global.
  */
 export function GlobalModalManager() {
+    const { activeResource, resources } = useAdminStore();
+    const resource = resources.find((r) => r.name === activeResource);
+
+    // If no resource is active, we don't render any specific CRUD modals.
+    // We return NULL here, and because we haven't called any hooks that 
+    // depend on the resource yet, this is safe.
+    if (!resource) return null;
+
+    // Pass the active resource to the inner manager which will handle the hooks.
+    return <GlobalModalInner resource={resource} />;
+}
+
+/**
+ * GlobalModalInner
+ * 
+ * This component safely calls useResource and other hooks because it's only
+ * rendered when a valid resource exists.
+ */
+function GlobalModalInner({ resource }: { resource: ResourceDefinition }) {
     const {
-        activeResource,
-        resources,
         createModalOpen,
         editModalOpen,
         deleteDialogOpen,
@@ -26,14 +44,7 @@ export function GlobalModalManager() {
         closeDeleteDialog,
     } = useAdminStore();
 
-    const resource = resources.find((r) => r.name === activeResource);
-
-    // If no resource is active, we don't render any specific CRUD modals
-    if (!resource) return null;
-
     // Connect to the data layer for this resource
-    // (Note: This hook call is safe because it uses TanStack Query internally,
-    // so it will share the same cache/state as the ResourceView component)
     const { schema, crud, pk } = useResource(resource);
 
     const handleCreate = useCallback(

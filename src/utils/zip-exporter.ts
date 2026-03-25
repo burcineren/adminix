@@ -14,6 +14,7 @@ export async function exportProjectZip(
     // 1. Root Files
     zip.file("package.json", CodeGenerator.generatePackageJson(projectName));
     zip.file("vite.config.ts", CodeGenerator.generateViteConfig());
+    zip.file("tsconfig.json", CodeGenerator.generateTsConfig());
     zip.file("index.html", CodeGenerator.generateIndexHtml(resources[0]?.name ?? "Admin"));
     zip.file("README.md", CodeGenerator.generateReadme(projectName));
     zip.file(".gitignore", "node_modules\ndist\n.DS_Store\n.env.local");
@@ -21,6 +22,7 @@ export async function exportProjectZip(
     // 2. Src Folder
     const src = zip.folder("src")!;
     src.file("adminConfig.ts", CodeGenerator.generateConfigCode(resources));
+    src.file("apiHooks.ts", CodeGenerator.generateApiHooks(resources));
     src.file("App.tsx", CodeGenerator.generateAppCode(resources[0]?.label ?? "Admin Panel"));
     src.file("main.tsx", CodeGenerator.generateMainTsx());
     src.file("index.css", `

@@ -173,4 +173,104 @@ createRoot(document.getElementById('root')!).render(
 </html>
 `;
   }
+
+  /**
+   * Generates a 'tsconfig.json' for the exported project.
+   */
+  static generateTsConfig(): string {
+    return JSON.stringify({
+      compilerOptions: {
+        target: "ES2020",
+        useDefineForClassFields: true,
+        lib: ["ES2020", "DOM", "DOM.Iterable"],
+        module: "ESNext",
+        skipLibCheck: true,
+        moduleResolution: "bundler",
+        allowImportingTsExtensions: true,
+        isolatedModules: true,
+        moduleDetection: "force",
+        noEmit: true,
+        jsx: "react-jsx",
+        strict: true,
+        noUnusedLocals: true,
+        noUnusedParameters: true,
+        noFallthroughCasesInSwitch: true,
+        noUncheckedSideEffectImports: true,
+      },
+      include: ["src"],
+    }, null, 2);
+  }
+
+  /**
+   * Generates typed React Query hooks for each resource.
+   */
+  static generateApiHooks(resources: ResourceDefinition[]): string {
+    const hooks = resources.map((r) => {
+      const capitalized = r.name.charAt(0).toUpperCase() + r.name.slice(1);
+      return `
+/**
+ * Hook for ${r.label ?? r.name} resource
+ */
+export function use${capitalized}(page = 1, pageSize = 10) {
+  return useQuery({
+    queryKey: ['${r.name}', page, pageSize],
+    queryFn: async () => {
+      const res = await fetch(\`${r.endpoint}?page=\${page}&limit=\${pageSize}\`);
+      if (!res.ok) throw new Error('Failed to fetch ${r.name}');
+      return res.json();
+    },
+  });
+}
+
+export function use${capitalized}Mutation() {
+  const queryClient = useQueryClient();
+  
+  const create = useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const res = await fetch('${r.endpoint}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to create');
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${r.name}'] }),
+  });
+
+  const update = useMutation({
+    mutationFn: async ({ id, data }: { id: string | number; data: Record<string, unknown> }) => {
+      const res = await fetch(\`${r.endpoint}/\${id}\`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${r.name}'] }),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string | number) => {
+      const res = await fetch(\`${r.endpoint}/\${id}\`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${r.name}'] }),
+  });
+
+  return { create, update, remove };
+}`;
+    }).join("\n");
+
+    return `
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+/**
+ * Auto-generated API hooks for AutoAdmin resources.
+ * Each resource gets a query hook and a mutation hook for CRUD operations.
+ */
+${hooks}
+`;
+  }
 }

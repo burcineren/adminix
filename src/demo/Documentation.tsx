@@ -13,7 +13,7 @@ import {
     Check,
     Cpu,
     ExternalLink,
-    LayoutDashboard
+    Sparkles
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Card, Badge, Separator } from "@/ui/Misc";
@@ -72,8 +72,9 @@ const SECTIONS = [
     { id: "concept", title: "Core Concept", icon: Layers },
     { id: "fields", title: "Field Schema", icon: Blocks },
     { id: "api", title: "API Configuration", icon: Settings },
-    { id: "plugins", title: "Plugin System", icon: Code2 },
-    { id: "playground", title: "DevPlayground", icon: Cpu },
+    { id: "playground", title: "Dashboard Designer", icon: Cpu },
+    { id: "export", title: "Project Export", icon: ExternalLink },
+    { id: "plugins", title: "Plugin System", icon: Blocks },
 ];
 
 const SectionHeader = ({ id, title, icon: Icon, description }: { id: string; title: string; icon: React.ComponentType<{ className?: string }>; description?: string }) => (
@@ -394,68 +395,145 @@ addRequestInterceptor((options) => ({
 
                     <Separator className="my-16" />
 
-                    {/* ── Section: Plugins ────────────────────────────────────────── */}
+                    {/* ── Section: Dashboard Designer ──────────────────────────────── */}
                     <SectionHeader 
-                        id="plugins"
-                        title="Plugin System"
-                        icon={Code2}
-                        description="Don't build from scratch. Extend the UI at key insertion points: Sidebar, Table Header, Row Actions, and more."
+                        id="playground"
+                        title="Dashboard Designer"
+                        icon={Cpu}
+                        description="AutoAdmin ships with a powerful builder that lets you prototype and test your admin panel in real-time. It's the ultimate tool for rapid development."
                     />
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                        {[
-                            { name: "UI Injection", icon: LayoutDashboard, desc: "Inject custom widgets into the sidebar." },
-                            { name: "Table Hooks", icon: Blocks, desc: "Add custom toolbars or footer stats." },
-                            { name: "Event Hooks", icon: CheckCircle2, desc: "Run logic after every CRUD mutation." },
-                        ].map((p, i) => (
-                            <Card key={i} className="p-4 flex flex-col items-center text-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-[hsl(var(--muted))] flex items-center justify-center text-[hsl(var(--primary))]">
-                                    <p.icon className="h-5 w-5" />
-                                </div>
-                                <h5 className="font-bold text-xs uppercase tracking-wider">{p.name}</h5>
-                                <p className="text-[10px] text-[hsl(var(--muted-foreground))]">{p.desc}</p>
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Card className="p-5 border-indigo-500/10 bg-indigo-500/5">
+                                <h4 className="font-bold mb-2 flex items-center gap-2">
+                                    <Code2 className="h-4 w-4 text-indigo-500" />
+                                    Dual-Mode Editing
+                                </h4>
+                                <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
+                                    Switch between a visual drag-and-drop style editor and raw JSON. They stay synchronized 1:1, giving you the best of both worlds.
+                                </p>
                             </Card>
-                        ))}
+                            <Card className="p-5 border-emerald-500/10 bg-emerald-500/5">
+                                <h4 className="font-bold mb-2 flex items-center gap-2">
+                                    <Zap className="h-4 w-4 text-emerald-500" />
+                                    Instant Preview
+                                </h4>
+                                <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
+                                    Any change in the schema is instantly reflected in the live preview panel without page reloads, using our reactive rendering engine.
+                                </p>
+                            </Card>
+                        </div>
+                        
+                        <div className="p-8 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center gap-4 text-center">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500 text-white shadow-xl shadow-indigo-500/20">
+                                <Sparkles className="h-6 w-6" />
+                            </div>
+                            <h4 className="text-white font-bold tracking-tight">Zero-Config Mode in Designer</h4>
+                            <p className="text-slate-400 text-xs max-w-sm leading-relaxed">
+                                Paste a raw API response and AutoAdmin will automatically infer the entire schema, generating fields, types, and labels for you.
+                            </p>
+                        </div>
                     </div>
 
                     <Separator className="my-16" />
 
-                    {/* ── Section: Playground ─────────────────────────────────────── */}
+                    {/* ── Section: Export ─────────────────────────────────────────── */}
                     <SectionHeader 
-                        id="playground"
-                        title="DevPlayground"
-                        icon={Cpu}
-                        description="Our built-in interactive tool for developers. Prototyping schemas has never been this fast."
+                        id="export"
+                        title="Project Export"
+                        icon={ExternalLink}
+                        description="Download your entire admin panel as a standalone, production-ready React project with one click."
                     />
 
-                    <div className="p-1 rounded-2xl bg-linear-to-tr from-slate-900 via-indigo-900 to-slate-900 shadow-2xl relative group overflow-hidden">
-                        <div className="absolute inset-0 bg-indigo-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="bg-slate-950/40 backdrop-blur-sm p-8 rounded-[15px] relative z-10 text-center">
-                            <h4 className="text-white text-xl font-bold mb-2 tracking-tight">Interactive Schema Builder</h4>
-                            <p className="text-slate-400 text-sm mb-6 max-w-sm mx-auto">
-                                Live edit JSON configs, see real-time previews, and export a ready-to-run React project.
+                    <div className="space-y-6">
+                        <p className="text-[hsl(var(--muted-foreground))] leading-relaxed">
+                            The export system generates a clean, optimized Vite project that you can host anywhere. It includes:
+                        </p>
+                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {[
+                                "Standalone API Layer (React Query)",
+                                "Pre-configured Vite & Tailwind",
+                                "Type-safe Resource Definitions",
+                                "Ready-to-deploy structure",
+                                "Customizable src/ folder",
+                                "Clean TSConfig & ESLint rules"
+                            ].map((item, i) => (
+                                <li key={i} className="flex items-center gap-2 text-sm text-[hsl(var(--foreground))]">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                    {item}
+                                </li>
+                            ))}
+                        </ul>
+
+                        <div className="mt-6">
+                            <h4 className="text-sm font-bold uppercase tracking-wider mb-2">How to use exported project:</h4>
+                            <CodeBlock language="bash" code={`# 1. Unzip the downloaded file
+# 2. Enter directory and install
+npm install
+
+# 3. Start development
+npm run dev`} />
+                        </div>
+                    </div>
+
+                    <Separator className="my-16" />
+
+                    {/* ── Section: Plugins ────────────────────────────────────────── */}
+                    <SectionHeader 
+                        id="plugins"
+                        title="Plugin System"
+                        icon={Blocks}
+                        description="AutoAdmin is designed for extensibility. Use plugins to modify the schema at runtime or inject custom React components."
+                    />
+
+                    <div className="space-y-8">
+                        <div>
+                            <h4 className="text-[11px] font-black uppercase tracking-widest text-[hsl(var(--primary))] mb-3">Schema Plugins</h4>
+                            <p className="text-sm text-[hsl(var(--muted-foreground))] mb-4 leading-relaxed">
+                                Schema plugins can intercept the inference process. For example, you can force all fields ending with <code>_id</code> to be hidden:
                             </p>
-                            <Button 
-                                variant="default" 
-                                className="bg-white text-slate-950 hover:bg-slate-200 h-10 px-6 font-bold tracking-tight rounded-full group/btn"
-                                onClick={() => window.location.hash = "mode=playground"}
-                            >
-                                Try the Playground <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                            </Button>
+                            <CodeBlock code={`import { registerSchemaPlugin } from 'auto-admin';
+
+registerSchemaPlugin({
+  name: 'hide-internal-ids',
+  transformFields: (fields) => {
+    return fields.map(f => ({
+      ...f,
+      hidden: f.name.endsWith('_id') ? true : f.hidden
+    }));
+  }
+});`} />
+                        </div>
+
+                        <div className="p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+                            <h4 className="font-bold flex items-center gap-2 mb-3">
+                                <Layers className="h-4 w-4 text-orange-500" />
+                                Component Overrides
+                            </h4>
+                            <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed mb-4">
+                                You can register custom React components to handle specific data types globally:
+                            </p>
+                            <CodeBlock code={`import { registerComponentMapper } from 'auto-admin';
+import MyRichTextEditor from './MyRichTextEditor';
+
+registerComponentMapper('RichText', (props) => (
+  <MyRichTextEditor {...props} />
+));`} />
                         </div>
                     </div>
 
                     <Separator className="my-24" />
 
-                    <footer className="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))]">
+                    <footer className="flex flex-col sm:flex-row items-center justify-between text-xs text-[hsl(var(--muted-foreground))] gap-4">
                         <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                            System Operational
+                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            AutoAdmin Engine 1.0.0-beta
                         </div>
-                        <div className="flex gap-4">
-                            <a href="#" className="hover:text-[hsl(var(--foreground))] transition-colors">GitHub</a>
-                            <a href="#" className="hover:text-[hsl(var(--foreground))] transition-colors">NPM</a>
-                            <a href="#" className="hover:text-[hsl(var(--foreground))] transition-colors">Twitter</a>
+                        <div className="flex gap-6">
+                            <a href="#" className="hover:text-[hsl(var(--foreground))] transition-colors flex items-center gap-1.5"><Code2 className="h-3 w-3" /> GitHub</a>
+                            <a href="#" className="hover:text-[hsl(var(--foreground))] transition-colors flex items-center gap-1.5"><Layers className="h-3 w-3" /> NPM</a>
+                            <a href="#" className="hover:text-[hsl(var(--foreground))] transition-colors flex items-center gap-1.5"><Settings className="h-3 w-3" /> Twitter</a>
                         </div>
                     </footer>
                 </div>
@@ -495,20 +573,3 @@ addRequestInterceptor((options) => ({
     );
 }
 
-const CheckCircle2 = ({ className }: { className?: string }) => (
-    <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        width="24" 
-        height="24" 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        className={className}
-    >
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-        <polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
-);

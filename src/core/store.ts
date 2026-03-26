@@ -41,12 +41,24 @@ export interface AdminState {
 }
 
 export const useAdminStore = create<AdminState>((set) => ({
-  activeResource: null,
-  setActiveResource: (name) => set({ activeResource: name }),
+  activeResource: typeof window !== "undefined" ? localStorage.getItem("autoadmin_active_resource") : null,
+  setActiveResource: (name) => {
+    localStorage.setItem("autoadmin_active_resource", name || "");
+    set({ activeResource: name });
+  },
 
-  darkMode: false,
-  toggleDarkMode: () => set((s) => ({ darkMode: !s.darkMode })),
-  setDarkMode: (value) => set({ darkMode: value }),
+  darkMode: typeof window !== "undefined" 
+    ? (localStorage.getItem("autoadmin_dark_mode") === "true" || (!localStorage.getItem("autoadmin_dark_mode") && window.matchMedia("(prefers-color-scheme: dark)").matches))
+    : false,
+  toggleDarkMode: () => set((s) => {
+    const newVal = !s.darkMode;
+    localStorage.setItem("autoadmin_dark_mode", String(newVal));
+    return { darkMode: newVal };
+  }),
+  setDarkMode: (value) => {
+    localStorage.setItem("autoadmin_dark_mode", String(value));
+    set({ darkMode: value });
+  },
 
   sidebarOpen: true,
   setSidebarOpen: (open) => set({ sidebarOpen: open }),

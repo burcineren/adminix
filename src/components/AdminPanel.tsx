@@ -32,7 +32,7 @@ function AdminPanelInner({
     title,
     logo,
     plugins,
-    defaultDarkMode = false,
+    defaultDarkMode,
     showDashboard: propShowDashboard,
 }: AdminPanelProps) {
     const activeResource = useAdminStore((state) => state.activeResource);
@@ -75,7 +75,9 @@ function AdminPanelInner({
 
     // Initial dark mode only
     useEffect(() => {
-        setDarkMode(defaultDarkMode);
+        if (defaultDarkMode !== undefined) {
+            setDarkMode(defaultDarkMode);
+        }
     }, [defaultDarkMode, setDarkMode]);
 
     // Initial navigation

@@ -91,9 +91,25 @@ const SectionHeader = ({ id, title, icon: Icon, description }: { id: string; tit
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function Documentation() {
-    const [activeSection, setActiveSection] = useState("intro");
+    const [activeSection, setActiveSectionState] = useState(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("autoadmin_docs_section") || "intro";
+        }
+        return "intro";
+    });
+
+    const setActiveSection = (section: string) => {
+        setActiveSectionState(section);
+        localStorage.setItem("autoadmin_docs_section", section);
+    };
 
     useEffect(() => {
+        // Initial scroll to persisted section
+        const saved = localStorage.getItem("autoadmin_docs_section");
+        if (saved && saved !== "intro") {
+            setTimeout(() => scrollTo(saved), 100);
+        }
+
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {

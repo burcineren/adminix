@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import {
     BookOpen,
     Code2,
@@ -9,6 +9,7 @@ import {
     Home
 } from "lucide-react";
 import { AdminPanel } from "@/components/AdminPanel";
+import { useAdminStore } from "@/core/store";
 import { DEMO_RESOURCES } from "./examples";
 import { Button } from "@/ui/Button";
 import { Card } from "@/ui/Misc";
@@ -46,7 +47,30 @@ type DemoMode = "home" | "dashboard" | "zero-config" | "playground" | "docs";
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function DemoRunner() {
-    const [mode, setMode] = useState<DemoMode>("home");
+    // Restore mode from local storage or default to 'home'
+    const [mode, setModeState] = useState<DemoMode>(() => {
+        if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("autoadmin_demo_mode");
+            return (saved as DemoMode) || "home";
+        }
+        return "home";
+    });
+
+    const setMode = (newMode: DemoMode) => {
+        setModeState(newMode);
+        localStorage.setItem("autoadmin_demo_mode", newMode);
+    };
+
+    const darkMode = useAdminStore((s) => s.darkMode);
+
+    // Synchronize dark mode class globally (for landing page / docs as well)
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+    }, [darkMode]);
 
     return (
         <div className="flex h-screen w-full flex-col bg-[hsl(var(--background))] overflow-hidden">
@@ -122,7 +146,6 @@ export function DemoRunner() {
                             <AdminPanel
                                 resources={DEMO_RESOURCES}
                                 title="Corporate Admin"
-                                defaultDarkMode={true}
                             />
                         </div>
                     )}

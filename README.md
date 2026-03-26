@@ -6,10 +6,11 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://typescriptlang.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
 
-AutoAdmin is a React library that generates production-ready admin interfaces from your REST API. Zero boilerplate, full TypeScript, endlessly extensible.
+AutoAdmin is a zero-config React library that generates production-ready management dashboards from your REST API instantly. Point to any endpoint, and it auto-detects fields, types, and labels to render a full-featured CRUD interface.
 
-<!-- TODO: Add a demo GIF here -->
-<!-- ![AutoAdmin Demo](./docs/demo.gif) -->
+## 📺 Live Demo
+![AutoAdmin Demo](https://raw.githubusercontent.com/google/autoadmin/main/docs/demo.gif)
+*(GIF Demo: Zero-Config inference and live schema editing in action)*
 
 ---
 

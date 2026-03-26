@@ -1,10 +1,12 @@
 import { useAdminStore } from "@/core/store";
 import { useResource } from "@/hooks/useResource";
-import { CreateModal } from "@/components/CreateModal";
-import { EditModal } from "@/components/EditModal";
-import { DeleteDialog } from "@/components/DeleteDialog";
-import { useCallback } from "react";
+import { useCallback, lazy, Suspense } from "react";
 import type { ResourceDefinition } from "@/types/resource-types";
+
+// Lazy load heavy components
+const CreateModal = lazy(() => import("@/components/CreateModal").then(m => ({ default: m.CreateModal })));
+const EditModal = lazy(() => import("@/components/EditModal").then(m => ({ default: m.EditModal })));
+const DeleteDialog = lazy(() => import("@/components/DeleteDialog").then(m => ({ default: m.DeleteDialog })));
 
 /**
  * GlobalModalManager
@@ -49,26 +51,41 @@ function GlobalModalInner({ resource }: { resource: ResourceDefinition }) {
 
     const handleCreate = useCallback(
         async (data: Record<string, unknown>) => {
-            await crud.create(data);
+            try {
+                await crud.create(data);
+                closeCreateModal();
+            } catch (err) {
+                // Toasts handled inside useCrudActions
+            }
         },
-        [crud]
+        [crud, closeCreateModal]
     );
 
     const handleUpdate = useCallback(
         async (data: Record<string, unknown>) => {
             if (!editingRow) return;
-            await crud.update(editingRow[pk], data);
+            try {
+                await crud.update(editingRow[pk], data);
+                closeEditModal();
+            } catch (err) {
+                // Toasts handled inside useCrudActions
+            }
         },
-        [crud, editingRow, pk]
+        [crud, editingRow, pk, closeEditModal]
     );
 
     const handleDelete = useCallback(async () => {
         if (!deletingRow) return;
-        await crud.remove(deletingRow[pk]);
-    }, [crud, deletingRow, pk]);
+        try {
+            await crud.remove(deletingRow[pk]);
+            closeDeleteDialog();
+        } catch (err) {
+            // Toasts handled inside useCrudActions
+        }
+    }, [crud, deletingRow, pk, closeDeleteDialog]);
 
     return (
-        <>
+        <Suspense fallback={null}>
             <CreateModal
                 open={createModalOpen}
                 onClose={closeCreateModal}
@@ -99,6 +116,6 @@ function GlobalModalInner({ resource }: { resource: ResourceDefinition }) {
                         : "this record"
                 }
             />
-        </>
+        </Suspense>
     );
 }

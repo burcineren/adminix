@@ -4,12 +4,13 @@
 // and Bulk Delete operations on a single resource.
 // Handles cache invalidation, toast notifications, and plugin callbacks.
 
-import { useMutation, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
+import { useMutation, useQueryClient, type UseMutationResult, type QueryKey } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { ResourceDefinition, AdminPlugin } from "@/types/resource-types";
 import {
   apiClient,
   resolveEndpoints,
+  type PaginatedResponse,
 } from "@/core/api-client";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -97,9 +98,37 @@ export function useCrudActions(
     }
   };
 
-  // Invalidation helper
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+
+  const updateCache = async (
+    updateFn: (old: PaginatedResponse | undefined) => PaginatedResponse | undefined
+  ) => {
+    // We update ALL list queries for this resource to ensure consistency 
+    // across different filter/page views.
+    const queryKey = [resource.name, "list"];
+    
+    // 1. Cancel outgoing refetches
+    await queryClient.cancelQueries({ queryKey });
+
+    // 2. Snapshot current state
+    const previousQueries = queryClient.getQueriesData<PaginatedResponse>({ queryKey });
+
+    // 3. Optimistically update all matching queries
+    queryClient.setQueriesData<PaginatedResponse>({ queryKey }, (old) => updateFn(old));
+
+    return { previousQueries };
+  };
+
+  const rollbackCache = (context: { previousQueries: [QueryKey, PaginatedResponse | undefined][] } | undefined) => {
+    if (context?.previousQueries) {
+      context.previousQueries.forEach(([key, value]) => {
+        queryClient.setQueryData(key, value);
+      });
+    }
+  };
+
   const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: [resource.name] });
+    void queryClient.invalidateQueries({ queryKey: [resource.name, "list"] });
   };
 
   // ── CREATE ──────────────────────────────────────────────────────────────────
@@ -109,16 +138,28 @@ export function useCrudActions(
     mutationFn: async (payload: CreatePayload) => {
       return apiClient.post(endpoints.create, payload.data, {}, resource.api);
     },
+    onMutate: async (payload) => {
+      return updateCache((old) => {
+        if (!old) return old;
+        // Optimistically add to the beginning of the list
+        return {
+          ...old,
+          data: [payload.data, ...old.data],
+          total: (old.total ?? 0) + 1,
+        };
+      });
+    },
     onSuccess: (data: unknown) => {
-      invalidate();
       notifyPlugins("create", data);
       if (showToasts) toast.success(`${label} created successfully`);
       callbacks?.onCreateSuccess?.(data);
     },
-    onError: (err: Error) => {
+    onError: (err: Error, _var, context) => {
+      rollbackCache(context as any);
       if (showToasts) toast.error(`Failed to create ${label}: ${err.message}`);
       callbacks?.onError?.(err, "create");
     },
+    onSettled: () => invalidate(),
   });
 
   // ── UPDATE ──────────────────────────────────────────────────────────────────
@@ -129,16 +170,28 @@ export function useCrudActions(
       const url = `${endpoints.update}/${String(payload.id)}`;
       return apiClient.put(url, payload.data, {}, resource.api);
     },
+    onMutate: async (payload) => {
+      return updateCache((old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.map((item) => 
+            String(item[pk]) === String(payload.id) ? { ...item, ...payload.data } : item
+          ),
+        };
+      });
+    },
     onSuccess: (data: unknown) => {
-      invalidate();
       notifyPlugins("update", data);
       if (showToasts) toast.success(`${label} updated successfully`);
       callbacks?.onUpdateSuccess?.(data);
     },
-    onError: (err: Error) => {
+    onError: (err: Error, _var, context) => {
+      rollbackCache(context as any);
       if (showToasts) toast.error(`Failed to update ${label}: ${err.message}`);
       callbacks?.onError?.(err, "update");
     },
+    onSettled: () => invalidate(),
   });
 
   // ── DELETE ──────────────────────────────────────────────────────────────────
@@ -149,16 +202,27 @@ export function useCrudActions(
       const url = `${endpoints.delete}/${String(id)}`;
       return apiClient.delete(url, undefined, {}, resource.api);
     },
+    onMutate: async (id) => {
+      return updateCache((old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.filter((item) => String(item[pk]) !== String(id)),
+          total: Math.max(0, (old.total ?? 0) - 1),
+        };
+      });
+    },
     onSuccess: (_data: unknown, id: unknown) => {
-      invalidate();
       notifyPlugins("delete", { [pk]: id });
       if (showToasts) toast.success(`${label} deleted successfully`);
       callbacks?.onDeleteSuccess?.(id);
     },
-    onError: (err: Error) => {
+    onError: (err: Error, _var, context) => {
+      rollbackCache(context as any);
       if (showToasts) toast.error(`Failed to delete ${label}: ${err.message}`);
       callbacks?.onError?.(err, "delete");
     },
+    onSettled: () => invalidate(),
   });
 
   // ── BULK DELETE ─────────────────────────────────────────────────────────────
@@ -168,18 +232,31 @@ export function useCrudActions(
     mutationFn: async (ids: unknown[]) => {
       return apiClient.delete(endpoints.bulkDelete, { ids }, {}, resource.api);
     },
+    onMutate: async (ids) => {
+      const idsSet = new Set(ids.map(String));
+      return updateCache((old) => {
+        if (!old) return old;
+        const newData = old.data.filter((item) => !idsSet.has(String(item[pk])));
+        return {
+          ...old,
+          data: newData,
+          total: Math.max(0, (old.total ?? 0) - (old.data.length - newData.length)),
+        };
+      });
+    },
     onSuccess: (_data: unknown, ids: unknown[]) => {
-      invalidate();
       notifyPlugins("delete", { ids });
       if (showToasts) {
         toast.success(`${ids.length} ${label} record(s) deleted`);
       }
       callbacks?.onBulkDeleteSuccess?.(ids);
     },
-    onError: (err: Error) => {
+    onError: (err: Error, _var, context) => {
+      rollbackCache(context as any);
       if (showToasts) toast.error(`Bulk delete failed: ${err.message}`);
       callbacks?.onError?.(err, "bulkDelete");
     },
+    onSettled: () => invalidate(),
   });
 
   // ── Convenience wrappers ───────────────────────────────────────────────────

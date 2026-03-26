@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
     Code2,
     Monitor,
@@ -8,9 +8,11 @@ import {
     ChevronLeft,
     Sparkles,
     Download,
-    CheckCircle2
+    CheckCircle2,
+    Settings
 } from "lucide-react";
 import { AdminPanel } from "./AdminPanel";
+import { VisualSchemaEditor } from "./VisualSchemaEditor";
 import { Card } from "@/ui/Misc";
 import { Button } from "@/ui/Button";
 import { Badge } from "@/ui/Misc";
@@ -55,9 +57,20 @@ export function DevPlayground() {
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isExporting, setIsExporting] = useState(false);
+    const [editMode, setEditMode] = useState<"visual" | "json">("visual");
+    const [isSyncing, setIsSyncing] = useState(false);
 
     // Debounce the JSON text for preview updates (300ms)
     const debouncedJson = useDebounce(jsonText, 300);
+
+    // Track syncing state
+    useEffect(() => {
+        if (jsonText !== debouncedJson) {
+            setIsSyncing(true);
+        } else {
+            setIsSyncing(false);
+        }
+    }, [jsonText, debouncedJson]);
 
     // Parse and validate when debounced text changes
     const processSchema = useCallback((text: string) => {
@@ -84,13 +97,18 @@ export function DevPlayground() {
         }
     }, []);
 
-    // Use effect equivalent: process when debounced value changes
-    // We use useState + useCallback pattern to avoid useEffect dependency issues
+    // Effect: sync JSON editor -> state
     const [lastProcessed, setLastProcessed] = useState(debouncedJson);
     if (debouncedJson !== lastProcessed) {
         setLastProcessed(debouncedJson);
         processSchema(debouncedJson);
     }
+
+    // Handler: sync state -> JSON editor
+    const handleVisualChange = (updated: ResourceDefinition) => {
+        setResource(updated);
+        setJsonText(JSON.stringify(updated, null, 2));
+    };
 
     const hasError = !!parseError;
     const hasWarnings = validationErrors.length > 0;
@@ -106,6 +124,7 @@ export function DevPlayground() {
 
     const handleReset = () => {
         setJsonText(JSON.stringify(DEFAULT_RESOURCE, null, 2));
+        setResource(DEFAULT_RESOURCE);
         setParseError(null);
         setValidationErrors([]);
     };
@@ -134,7 +153,7 @@ export function DevPlayground() {
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[hsl(var(--border))]">
                     <div className="flex items-center gap-2">
                         <Code2 className="h-4 w-4 text-[hsl(var(--primary))]" />
-                        <span className="font-bold text-sm tracking-tight uppercase">Schema Editor</span>
+                        <span className="font-bold text-sm tracking-tight uppercase">Dashboard Designer</span>
                     </div>
                     <div className="flex items-center gap-1">
                         <Button
@@ -151,31 +170,68 @@ export function DevPlayground() {
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleReset} title="Reset to default">
                             <Undo2 className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleFormat} title="Format JSON">
-                            <RefreshCw className="h-3.5 w-3.5" />
-                        </Button>
+                        {editMode === "json" && (
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleFormat} title="Format JSON">
+                                <RefreshCw className="h-3.5 w-3.5" />
+                            </Button>
+                        )}
                     </div>
                 </div>
 
-                <div className="flex-1 relative overflow-hidden group">
-                    <textarea
-                        value={jsonText}
-                        onChange={(e) => setJsonText(e.target.value)}
-                        spellCheck={false}
+                {/* Tabs Toggle */}
+                <div className="flex p-1 bg-[hsl(var(--muted)/0.5)] border-b border-[hsl(var(--border))]">
+                    <button
+                        onClick={() => setEditMode("visual")}
                         className={cn(
-                            "absolute inset-0 w-full h-full p-6 font-mono text-xs leading-relaxed transition-all",
-                            "bg-transparent resize-none border-none outline-none text-[hsl(var(--foreground))]",
-                            "placeholder:text-[hsl(var(--muted-foreground))]/50",
-                            hasError ? "selection:bg-red-500/20" : "selection:bg-[hsl(var(--primary)/0.2)]"
+                            "flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all",
+                            editMode === "visual" 
+                                ? "bg-[hsl(var(--card))] text-[hsl(var(--primary))] shadow-sm" 
+                                : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--card)/0.5)]"
                         )}
-                        placeholder="Paste your ResourceDefinition JSON here..."
-                    />
+                    >
+                        <Settings className="h-3 w-3" />
+                        Visual Editor
+                    </button>
+                    <button
+                        onClick={() => setEditMode("json")}
+                        className={cn(
+                            "flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all",
+                            editMode === "json" 
+                                ? "bg-[hsl(var(--card))] text-[hsl(var(--primary))] shadow-sm" 
+                                : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--card)/0.5)]"
+                        )}
+                    >
+                        <Code2 className="h-3 w-3" />
+                        JSON Config
+                    </button>
+                </div>
+
+                <div className="flex-1 relative overflow-hidden group flex flex-col">
+                    {editMode === "json" ? (
+                        <textarea
+                            value={jsonText}
+                            onChange={(e) => setJsonText(e.target.value)}
+                            spellCheck={false}
+                            className={cn(
+                                "absolute inset-0 w-full h-full p-6 font-mono text-xs leading-relaxed transition-all",
+                                "bg-transparent resize-none border-none outline-none text-[hsl(var(--foreground))]",
+                                "placeholder:text-[hsl(var(--muted-foreground))]/50",
+                                hasError ? "selection:bg-red-500/20" : "selection:bg-[hsl(var(--primary)/0.2)]"
+                            )}
+                            placeholder="Paste your ResourceDefinition JSON here..."
+                        />
+                    ) : (
+                        <VisualSchemaEditor 
+                            resource={resource}
+                            onChange={handleVisualChange}
+                        />
+                    )}
 
                     {/* Error / Validation Overlay */}
                     {(hasError || hasWarnings) && (
-                        <div className="absolute bottom-4 left-4 right-4 animate-in slide-in-from-bottom-2 duration-300 space-y-2 max-h-[200px] overflow-y-auto">
-                            {hasError && (
-                                <Card className="bg-[hsl(var(--destructive)/0.1)] border-[hsl(var(--destructive)/0.2)] p-3">
+                        <div className="absolute bottom-4 left-4 right-4 animate-in slide-in-from-bottom-2 duration-300 space-y-2 max-h-[200px] overflow-y-auto z-10">
+                            {hasError && editMode === "json" && (
+                                <Card className="bg-[hsl(var(--destructive)/0.1)] border-[hsl(var(--destructive)/0.2)] p-3 shadow-xl backdrop-blur-sm">
                                     <div className="flex items-start gap-2">
                                         <AlertCircle className="h-4 w-4 text-[hsl(var(--destructive))] mt-0.5 shrink-0" />
                                         <div className="flex-1 min-w-0">
@@ -187,8 +243,8 @@ export function DevPlayground() {
                                     </div>
                                 </Card>
                             )}
-                            {hasWarnings && !hasError && (
-                                <Card className="bg-amber-500/10 border-amber-500/20 p-3">
+                            {hasWarnings && (
+                                <Card className="bg-amber-500/10 border-amber-500/20 p-3 shadow-xl backdrop-blur-sm">
                                     <div className="flex items-start gap-2">
                                         <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
                                         <div className="flex-1 min-w-0">
@@ -269,7 +325,9 @@ export function DevPlayground() {
                 <div className="absolute top-4 left-6 pointer-events-none z-20 flex flex-col gap-2">
                     <div className="flex h-7 items-center gap-2 rounded-full border border-[hsl(var(--primary)/0.2)] bg-[hsl(var(--background)/0.8)] backdrop-blur px-3 shadow-lg">
                         <Monitor className="h-3 w-3 text-[hsl(var(--primary))]" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-[hsl(var(--primary))]">Live Preview</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-[hsl(var(--primary))]">
+                            {isSyncing ? "Syncing..." : "Live Preview"}
+                        </span>
                     </div>
                 </div>
 
@@ -278,10 +336,10 @@ export function DevPlayground() {
                     <div className="flex items-center gap-3 rounded-full bg-[hsl(var(--background))/0.8] backdrop-blur border border-[hsl(var(--border))] px-4 py-2 shadow-2xl">
                         <div className={cn(
                             "flex h-2 w-2 rounded-full animate-pulse",
-                            hasError ? "bg-red-500" : hasWarnings ? "bg-amber-500" : "bg-emerald-500"
+                            isSyncing ? "bg-indigo-500" : hasError ? "bg-red-500" : hasWarnings ? "bg-amber-500" : "bg-emerald-500"
                         )} />
                         <span className="text-[10px] font-bold uppercase tracking-widest">
-                            {hasError ? "Parsing Error" : hasWarnings ? "Schema Warnings" : "Engine Reactive"}
+                            {isSyncing ? "Updating Schema..." : hasError ? "Parsing Error" : hasWarnings ? "Schema Warnings" : "Engine Stable"}
                         </span>
                     </div>
                 </div>

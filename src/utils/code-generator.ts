@@ -202,28 +202,60 @@ createRoot(document.getElementById('root')!).render(
   }
 
   /**
-   * Generates typed React Query hooks for each resource.
+   * Generates a single-file API layer that mirrors the AutoAdmin core behavior
+   * but is fully decoupled and ready for custom logic.
    */
   static generateApiHooks(resources: ResourceDefinition[]): string {
     const hooks = resources.map((r) => {
       const capitalized = r.name.charAt(0).toUpperCase() + r.name.slice(1);
+      const singular = r.name.endsWith('s') ? r.name.slice(0, -1) : r.name;
+      const capSingular = singular.charAt(0).toUpperCase() + singular.slice(1);
+
       return `
+// ── ${r.label ?? r.name} Resource Hooks ─────────────────────────────────────
+
 /**
- * Hook for ${r.label ?? r.name} resource
+ * Fetch a paginated list of ${r.name}
  */
-export function use${capitalized}(page = 1, pageSize = 10) {
+export function use${capitalized}(params: { page?: number; limit?: number; search?: string } = {}) {
+  const { page = 1, limit = 10, search } = params;
   return useQuery({
-    queryKey: ['${r.name}', page, pageSize],
+    queryKey: ['${r.name}', 'list', { page, limit, search }],
     queryFn: async () => {
-      const res = await fetch(\`${r.endpoint}?page=\${page}&limit=\${pageSize}\`);
+      const url = new URL('${r.endpoint}', window.location.origin);
+      url.searchParams.append('page', String(page));
+      url.searchParams.append('limit', String(limit));
+      if (search) url.searchParams.append('search', search);
+      
+      const res = await fetch(url.toString());
       if (!res.ok) throw new Error('Failed to fetch ${r.name}');
       return res.json();
     },
   });
 }
 
-export function use${capitalized}Mutation() {
+/**
+ * Fetch a single ${singular} by ID
+ */
+export function use${capSingular}(id: string | number | undefined) {
+  return useQuery({
+    queryKey: ['${r.name}', 'detail', id],
+    queryFn: async () => {
+      if (!id) return null;
+      const res = await fetch(\`${r.endpoint}/\${id}\`);
+      if (!res.ok) throw new Error('Failed to fetch ${singular}');
+      return res.json();
+    },
+    enabled: !!id,
+  });
+}
+
+/**
+ * CRUD Mutations for ${r.name}
+ */
+export function use${capitalized}Actions() {
   const queryClient = useQueryClient();
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['${r.name}'] });
   
   const create = useMutation({
     mutationFn: async (data: Record<string, unknown>) => {
@@ -232,10 +264,10 @@ export function use${capitalized}Mutation() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to create');
+      if (!res.ok) throw new Error('Failed to create ${singular}');
       return res.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${r.name}'] }),
+    onSuccess: invalidate,
   });
 
   const update = useMutation({
@@ -245,18 +277,18 @@ export function use${capitalized}Mutation() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to update');
+      if (!res.ok) throw new Error('Failed to update ${singular}');
       return res.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${r.name}'] }),
+    onSuccess: invalidate,
   });
 
   const remove = useMutation({
     mutationFn: async (id: string | number) => {
       const res = await fetch(\`${r.endpoint}/\${id}\`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete');
+      if (!res.ok) throw new Error('Failed to delete ${singular}');
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${r.name}'] }),
+    onSuccess: invalidate,
   });
 
   return { create, update, remove };
@@ -268,7 +300,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 /**
  * Auto-generated API hooks for AutoAdmin resources.
- * Each resource gets a query hook and a mutation hook for CRUD operations.
+ * These hooks provide type-safe data fetching and mutation
+ * for your React components.
  */
 ${hooks}
 `;

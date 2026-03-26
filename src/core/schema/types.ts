@@ -190,6 +190,12 @@ export type InferredType =
   | "custom"
   | "unknown";
 
+/** Array of all valid inferred types for UI selection. */
+export const INFERRED_TYPES: InferredType[] = [
+  "string", "number", "boolean", "date", "datetime", "email", 
+  "url", "uuid", "image-url", "select", "multiselect", "json", "unknown"
+];
+
 // ── Resource Configuration ───────────────────────────────────────────────────
 
 /**

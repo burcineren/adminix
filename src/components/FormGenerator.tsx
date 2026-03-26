@@ -1,13 +1,15 @@
 import { useForm, Controller, type ControllerRenderProps } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Terminal } from "lucide-react";
 import type { UISchemaField } from "@/core/schema/types";
 import { Input, Textarea } from "@/ui/Input";
 import { Select } from "@/ui/Select";
-import { Switch } from "@/ui/Misc";
+import { Switch, Card } from "@/ui/Misc";
 import { Button } from "@/ui/Button";
 import { useI18n } from "@/core/i18n";
 import { cn } from "@/utils/cn";
+import React from "react";
 
 // ── Schema Builder ─────────────────────────────────────────────────────────────
 
@@ -78,7 +80,7 @@ function buildZodSchema(fields: UISchemaField[]): z.ZodObject<Record<string, z.Z
 /**
  * Responsibility: Maps a UI schema field to its corresponding visual component.
  */
-export function FieldRenderer({
+export const FieldRenderer = React.memo(({
     field,
     controllerField,
     error,
@@ -86,7 +88,7 @@ export function FieldRenderer({
     field: UISchemaField;
     controllerField: ControllerRenderProps<Record<string, unknown>>;
     error?: string;
-}) {
+}) => {
     // 1. Check for custom render function in schema
     if (field.renderForm) {
         return <>{field.renderForm(field, controllerField)}</>;
@@ -157,7 +159,9 @@ export function FieldRenderer({
         default:
             return <Input {...commonProps} type="text" />;
     }
-}
+});
+
+FieldRenderer.displayName = "FieldRenderer";
 
 // ── Form Generator ─────────────────────────────────────────────────────────────
 
@@ -170,23 +174,35 @@ interface FormGeneratorProps {
     loading?: boolean;
 }
 
-export function FormGenerator({
+export const FormGenerator = React.memo(({
     fields,
     mode,
     initialValues = {},
     onSubmit,
     onCancel,
     loading,
-}: FormGeneratorProps) {
+}: FormGeneratorProps) => {
     const { t } = useI18n();
 
     // Only render fields that are marked for visibility in the current mode
-    const visibleFields = fields.filter((f) =>
-        mode === "create" ? f.showInCreate : f.showInEdit
+    const visibleFields = React.useMemo(() => 
+        fields.filter((f) => mode === "create" ? f.showInCreate : f.showInEdit),
+        [fields, mode]
     );
 
-    // Build validator once
-    const validationSchema = buildZodSchema(visibleFields);
+    const isZeroConfigEmpty = visibleFields.length === 0 && mode === "create";
+
+    // Build validator once - if zero config, use JSON validator
+    const validationSchema = React.useMemo(() => {
+        if (isZeroConfigEmpty) {
+            return z.object({ 
+                _raw_json: z.string().refine((val) => {
+                    try { JSON.parse(val); return true; } catch { return false; }
+                }, "Invalid JSON format") 
+            });
+        }
+        return buildZodSchema(visibleFields);
+    }, [isZeroConfigEmpty, visibleFields]);
 
     const {
         control,
@@ -194,26 +210,65 @@ export function FormGenerator({
         formState: { errors },
     } = useForm<Record<string, unknown>>({
         resolver: zodResolver(validationSchema),
-        values: initialValues, // Use 'values' to stay reactive to remote changes
+        values: isZeroConfigEmpty ? { _raw_json: '{\n  "id": 1,\n  "name": "Example"\n}' } : initialValues,
     });
 
+    const handleFormSubmit = async (values: Record<string, unknown>) => {
+        if (isZeroConfigEmpty) {
+            const parsed = JSON.parse(String(values._raw_json));
+            await onSubmit(parsed);
+        } else {
+            await onSubmit(values);
+        }
+    };
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 animate-fade-in">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6 animate-fade-in">
             <div className="space-y-4">
-                {visibleFields.map((field) => (
-                    <Controller
-                        key={field.name}
-                        name={field.name}
-                        control={control}
-                        render={({ field: controllerField }) => (
-                            <FieldRenderer
-                                field={field}
-                                controllerField={controllerField as ControllerRenderProps<Record<string, unknown>>}
-                                error={errors[field.name]?.message as string | undefined}
-                            />
-                        )}
-                    />
-                ))}
+                {isZeroConfigEmpty ? (
+                    <div className="space-y-4">
+                        <Card className="p-4 bg-[hsl(var(--muted)/0.3)] border-dashed">
+                            <div className="flex items-start gap-3">
+                                <Terminal className="h-5 w-5 text-[hsl(var(--primary))] mt-0.5" />
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold">Manual Data Entry</p>
+                                    <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
+                                        No fields detected yet. Provide a sample JSON object to create the first record and enable automatic UI generation.
+                                    </p>
+                                </div>
+                            </div>
+                        </Card>
+                        <Controller
+                            name="_raw_json"
+                            control={control}
+                            render={({ field: controllerField }) => (
+                                <Textarea 
+                                    {...controllerField}
+                                    value={String(controllerField.value ?? "")}
+                                    label="Sample JSON Data"
+                                    placeholder='{ "name": "John Doe", "email": "john@example.com" }'
+                                    className="font-mono text-xs h-[200px]"
+                                    error={errors._raw_json?.message as string}
+                                />
+                            )}
+                        />
+                    </div>
+                ) : (
+                    visibleFields.map((field) => (
+                        <Controller
+                            key={field.name}
+                            name={field.name}
+                            control={control}
+                            render={({ field: controllerField }) => (
+                                <FieldRenderer
+                                    field={field}
+                                    controllerField={controllerField as ControllerRenderProps<Record<string, unknown>>}
+                                    error={errors[field.name]?.message as string | undefined}
+                                />
+                            )}
+                        />
+                    ))
+                )}
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-[hsl(var(--border))]">
@@ -237,5 +292,7 @@ export function FormGenerator({
             </div>
         </form>
     );
-}
+});
+
+FormGenerator.displayName = "FormGenerator";
 

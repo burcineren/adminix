@@ -1,12 +1,12 @@
 import { useCallback, useState } from "react";
-import { Plus, Filter, RefreshCw, Download, Database } from "lucide-react";
+import { Plus, Filter, RefreshCw, Download, Database, AlertCircle, Zap } from "lucide-react";
 import { useResource } from "@/hooks/useResource";
 import { useAdminStore } from "@/core/store";
 import { DataTable } from "@/components/DataTable";
 import { FilterBar } from "@/components/FilterBar";
 import { SearchBar } from "@/components/SearchBar";
 import { Button } from "@/ui/Button";
-import { Card } from "@/ui/Misc";
+import { Card, EmptyState, LoadingScreen } from "@/ui/Misc";
 import type { ResourceDefinition } from "@/types/resource-types";
 import { cn } from "@/utils/cn";
 
@@ -135,18 +135,35 @@ export function ResourceView({ resource }: ResourceViewProps) {
 
             {/* Zero-Config Analysis Placeholder */}
             {list.isLoading && !isSchemaDetected && (
-                <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-[hsl(var(--border))] rounded-xl bg-[hsl(var(--muted)/0.2)] gap-3 animate-slide-in">
-                    <div className="relative">
-                        <RefreshCw className="h-10 w-10 text-[hsl(var(--primary))] animate-spin opacity-50" />
-                        <Database className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-5 w-5 text-[hsl(var(--primary))]" />
-                    </div>
-                    <div className="text-center">
-                        <p className="font-semibold text-sm">Schema Detection in Progress</p>
-                        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
+                <Card className="flex flex-col items-center justify-center border-2 border-dashed border-[hsl(var(--border))] rounded-xl bg-[hsl(var(--muted)/0.2)]">
+                    <LoadingScreen message="Analyzing API Structure..." />
+                    <div className="pb-8 text-center px-6">
+                        <p className="text-xs text-[hsl(var(--muted-foreground))]">
                             AutoAdmin is analyzing your API response to infer structure, data types, and UI components.
                         </p>
                     </div>
-                </div>
+                </Card>
+            )}
+
+            {/* Zero-Config Empty State (No data yet to infer from) */}
+            {list.isSuccess && list.data.length === 0 && !resource.fields?.length && !isSchemaDetected && (
+                <Card className="border-2 border-dashed border-[hsl(var(--border))] rounded-xl bg-[hsl(var(--muted)/0.05)] py-20">
+                    <EmptyState 
+                        title="Waiting for Data"
+                        description={`${label} currently has no records. AutoAdmin needs at least one record to automatically infer the schema and generate the UI.`}
+                        icon={Zap}
+                        action={{
+                            label: "Create First Record",
+                            onClick: openCreateModal,
+                        }}
+                    />
+                    <div className="mt-8 pt-6 border-t border-[hsl(var(--border))/0.5] text-center">
+                        <p className="text-[10px] uppercase font-bold tracking-widest text-[hsl(var(--muted-foreground))] mb-2 opacity-50">Or define manually</p>
+                        <code className="text-[11px] px-3 py-1.5 rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]">
+                            {"{ name: '"} {label.toLowerCase()} {"', endpoint: '"} {resource.endpoint} {"', fields: [...] }"}
+                        </code>
+                    </div>
+                </Card>
             )}
 
             {/* Search */}
@@ -184,26 +201,40 @@ export function ResourceView({ resource }: ResourceViewProps) {
                     p.tableHeader && <p.tableHeader key={i} resource={resource} />
             )}
 
-            {/* Table card */}
-            <Card className="overflow-hidden">
-                <DataTable
-                    resource={resource}
-                    fields={schema.fields}
-                    data={list.data}
-                    loading={list.isLoading || list.isFetching}
-                    onEdit={permissions.edit !== false ? openEditModal : undefined}
-                    onDelete={permissions.delete !== false ? openDeleteDialog : undefined}
-                    onRowSelectionChange={setSelectedRows}
-                    serverSorting={resource.pagination?.mode !== "client"}
-                    onSortChange={(field, dir) => {
-                        setSort(field, dir);
-                    }}
-                    pagination={pagination}
-                    onBulkDelete={handleBulkDelete}
-                    onBulkExport={handleExport}
-                    isBulkDeleting={crud.state.isBulkDeleting}
-                />
-            </Card>
+            {/* Main Content State */}
+            {list.isError ? (
+                <Card className="p-0 border-[hsl(var(--destructive)/0.2)]">
+                    <EmptyState 
+                        title="Failed to load records"
+                        description={list.error?.message || "An error occurred while fetching data from the API."}
+                        icon={AlertCircle}
+                        action={{
+                            label: "Retry Connection",
+                            onClick: () => void refetch(),
+                        }}
+                    />
+                </Card>
+            ) : (
+                <Card className="overflow-hidden">
+                    <DataTable
+                        resource={resource}
+                        fields={schema.fields}
+                        data={list.data}
+                        loading={list.isLoading || list.isFetching}
+                        onEdit={permissions.edit !== false ? openEditModal : undefined}
+                        onDelete={permissions.delete !== false ? openDeleteDialog : undefined}
+                        onRowSelectionChange={setSelectedRows}
+                        serverSorting={resource.pagination?.mode !== "client"}
+                        onSortChange={(field, dir) => {
+                            setSort(field, dir);
+                        }}
+                        pagination={pagination}
+                        onBulkDelete={handleBulkDelete}
+                        onBulkExport={handleExport}
+                        isBulkDeleting={crud.state.isBulkDeleting}
+                    />
+                </Card>
+            )}
 
             {/* Plugin: table footer */}
             {resource.plugins?.map(

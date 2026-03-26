@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, Fragment, memo } from "react";
 import {
     useReactTable,
     getCoreRowModel,
@@ -20,7 +20,7 @@ import type { ResourceDefinition } from "@/types/resource-types";
 import type { UISchemaField } from "@/core/schema/types";
 import { Button } from "@/ui/Button";
 import { Dropdown } from "@/ui/Dropdown";
-import { Skeleton } from "@/ui/Misc";
+import { Skeleton, EmptyState } from "@/ui/Misc";
 import { cn } from "@/utils/cn";
 import { useTableColumns } from "@/hooks/useTableColumns";
 import { Pagination } from "@/components/Pagination";
@@ -43,7 +43,7 @@ interface DataTableProps {
     isBulkDeleting?: boolean;
 }
 
-export function DataTable({
+export const DataTable = memo(function DataTable({
     resource,
     fields,
     data,
@@ -183,13 +183,12 @@ export function DataTable({
                             <tr>
                                 <td
                                     colSpan={columns.length}
-                                    className="py-16 text-center text-[hsl(var(--muted-foreground))]"
+                                    className="py-12"
                                 >
-                                    <div className="flex flex-col items-center gap-2">
-                                        <Eye className="h-10 w-10 opacity-10" />
-                                        <p className="text-sm font-medium text-[hsl(var(--foreground))]">No records found</p>
-                                        <p className="text-xs">Try adjusting your filters or search term</p>
-                                    </div>
+                                    <EmptyState 
+                                        title="No records found"
+                                        description="We couldn't find any data matching your current view. Try adjusting your filters or search terms."
+                                    />
                                 </td>
                             </tr>
                         ) : (
@@ -252,5 +251,4 @@ export function DataTable({
             )}
         </div>
     );
-}
-
+});

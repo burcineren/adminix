@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, memo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { useAdminStore } from "@/core/store";
+import { useI18n } from "@/core/i18n";
 import { Sidebar, TopBar } from "@/components/Sidebar";
 import { ResourceView } from "@/components/ResourceView";
 import { Dashboard } from "@/components/Dashboard";
@@ -130,6 +131,8 @@ const AdminPanelInner = memo(function AdminPanelInner({
 
     // ── Error Rendering ──────────────────────────────────────────────────────────
     
+    const { t } = useI18n();
+
     if (validationErrors.length > 0) {
         return (
             <div className="flex h-screen w-full items-center justify-center p-6 bg-[hsl(var(--background))] animate-in fade-in zoom-in duration-500">
@@ -140,15 +143,19 @@ const AdminPanelInner = memo(function AdminPanelInner({
                         </div>
                         
                         <div className="space-y-2">
-                            <h2 className="text-2xl font-black tracking-tight uppercase italic text-[hsl(var(--destructive))]">Invalid Configuration</h2>
+                            <h2 className="text-2xl font-black tracking-tight uppercase italic text-[hsl(var(--destructive))]">
+                                {t.common.settings === "Ayarlar" ? "Geçersiz Yapılandırma" : "Invalid Configuration"}
+                            </h2>
                             <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed max-w-md mx-auto">
-                                The resource schema provided to <code className="text-indigo-500 font-bold">&lt;AdminPanel&gt;</code> contains structural errors that must be fixed.
+                                {t.common.settings === "Ayarlar" 
+                                    ? "<AdminPanel> bileşenine sağlanan kaynak şeması düzeltilmesi gereken yapısal hatalar içeriyor." 
+                                    : "The resource schema provided to <AdminPanel> contains structural errors that must be fixed."}
                             </p>
                         </div>
 
                         <div className="w-full text-left p-4 rounded-xl bg-[hsl(var(--muted)/0.5)] border border-[hsl(var(--border))] space-y-3">
                             <p className="text-[10px] font-black text-[hsl(var(--muted-foreground))] uppercase tracking-[0.2em] flex items-center gap-2">
-                                <AlertCircle className="h-3 w-3" /> Validation Issues ({validationErrors.length})
+                                <AlertCircle className="h-3 w-3" /> {t.common.settings === "Ayarlar" ? "Doğrulama Hataları" : "Validation Issues"} ({validationErrors.length})
                             </p>
                             <ul className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                                 {validationErrors.map((err, i) => (
@@ -161,10 +168,10 @@ const AdminPanelInner = memo(function AdminPanelInner({
 
                         <div className="flex gap-3 w-full pt-4">
                             <Button variant="outline" className="flex-1 font-bold h-11 rounded-xl" onClick={() => window.location.reload()}>
-                                <RotateCcw className="mr-2 h-4 w-4" /> Refresh
+                                <RotateCcw className="mr-2 h-4 w-4" /> {t.common.settings === "Ayarlar" ? "Yenile" : "Refresh"}
                             </Button>
                             <Button className="flex-1 font-bold h-11 rounded-xl shadow-lg shadow-[hsl(var(--primary)/20%)]" onClick={() => window.open('https://github.com/google/autoadmin/docs', '_blank')}>
-                                Documentation
+                                {t.common.settings === "Ayarlar" ? "Dokümantasyon" : "Documentation"}
                             </Button>
                         </div>
                     </div>
@@ -189,7 +196,7 @@ const AdminPanelInner = memo(function AdminPanelInner({
                 showDashboard={showDashboard}
             />
 
-            <TopBar title={isDashboard ? "Dashboard" : (currentResource?.label ?? currentResource?.name)} />
+            <TopBar title={isDashboard ? t.common.dashboard : (currentResource?.label ?? currentResource?.name)} />
 
             <main
                 className={cn(
@@ -222,6 +229,7 @@ const AdminPanelInner = memo(function AdminPanelInner({
 // ── Welcome fallback ──────────────────────────────────────────────────────────
 
 function WelcomeScreen() {
+    const { t } = useI18n();
     return (
         <div className="flex flex-col items-center justify-center min-h-[80vh] gap-8 px-4 animate-in fade-in zoom-in duration-500">
             <div className="text-center space-y-3">
@@ -235,20 +243,33 @@ function WelcomeScreen() {
                         </div>
                     </div>
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight">Welcome to AutoAdmin</h1>
+                <h1 className="text-3xl font-bold tracking-tight">
+                    {t.common.welcome === "Hoş geldiniz" ? "AutoAdmin'e Hoş Geldiniz" : "Welcome to AutoAdmin"}
+                </h1>
                 <p className="text-[hsl(var(--muted-foreground))] max-w-md">
-                    Select a resource from the sidebar to get started, or add resources to your{" "}
-                    <code className="rounded bg-[hsl(var(--muted))] px-1.5 py-0.5 text-sm font-mono text-[hsl(var(--primary))]">
-                        &lt;AdminPanel&gt;
-                    </code>{" "}
-                    component.
+                    {t.common.welcome === "Hoş geldiniz" 
+                        ? "Başlamak için yan menüden bir kaynak seçin veya kendi şemanızı AdminPanel bileşenine ekleyin."
+                        : "Select a resource from the sidebar to get started, or add resources to your <AdminPanel> component."
+                    }
                 </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
                 {[
-                    { icon: Database, title: "Auto CRUD", desc: "Full create, read, update, delete from your API schema" },
-                    { icon: Zap, title: "Zero Config", desc: "Works out of the box with sensible defaults" },
-                    { icon: Users, title: "Extensible", desc: "Plugin system lets you add custom widgets and actions" },
+                    { 
+                        icon: Database, 
+                        title: t.common.welcome === "Hoş geldiniz" ? "Otomatik CRUD" : "Auto CRUD", 
+                        desc: t.common.welcome === "Hoş geldiniz" ? "API şemanızdan tam oluşturma, okuma, güncelleme ve silme" : "Full create, read, update, delete from your API schema" 
+                    },
+                    { 
+                        icon: Zap, 
+                        title: t.common.welcome === "Hoş geldiniz" ? "Sıfır Yapılandırma" : "Zero Config", 
+                        desc: t.common.welcome === "Hoş geldiniz" ? "Mantıklı varsayılanlarla kutudan çıktığı gibi çalışır" : "Works out of the box with sensible defaults" 
+                    },
+                    { 
+                        icon: Users, 
+                        title: t.common.welcome === "Hoş geldiniz" ? "Genişletilebilir" : "Extensible", 
+                        desc: t.common.welcome === "Hoş geldiniz" ? "Eklenti sistemi ile özel widget'lar eklemenizi sağlar" : "Plugin system lets you add custom widgets and actions" 
+                    },
                 ].map(({ icon: Icon, title, desc }) => (
                     <div
                         key={title}

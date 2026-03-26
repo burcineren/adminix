@@ -22,6 +22,7 @@ import { Button } from "@/ui/Button";
 import { Dropdown } from "@/ui/Dropdown";
 import { Skeleton, EmptyState } from "@/ui/Misc";
 import { cn } from "@/utils/cn";
+import { useI18n } from "@/core/i18n";
 import { useTableColumns } from "@/hooks/useTableColumns";
 import { Pagination } from "@/components/Pagination";
 import { BulkActions } from "@/components/BulkActions";
@@ -58,6 +59,7 @@ export const DataTable = memo(function DataTable({
     onBulkExport,
     isBulkDeleting,
 }: DataTableProps) {
+    const { language } = useI18n();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -126,7 +128,7 @@ export const DataTable = memo(function DataTable({
                     trigger={
                         <Button variant="outline" size="sm" className="gap-1.5 ml-auto">
                             <Settings2 className="h-3.5 w-3.5" />
-                            Columns
+                            {language === 'tr' ? 'Sütunlar' : 'Columns'}
                             {hiddenCount > 0 && (
                                 <span className="ml-1 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-1.5 py-0.5 text-xs leading-none">
                                     {hiddenCount}
@@ -186,8 +188,10 @@ export const DataTable = memo(function DataTable({
                                     className="py-12"
                                 >
                                     <EmptyState 
-                                        title="No records found"
-                                        description="We couldn't find any data matching your current view. Try adjusting your filters or search terms."
+                                        title={language === 'tr' ? 'Kayıt bulunamadı' : 'No records found'}
+                                        description={language === 'tr' 
+                                            ? 'Mevcut görünüme uygun veri bulamadık. Filtreleri veya arama terimlerini değiştirmeyi deneyin.' 
+                                            : "We couldn't find any data matching your current view. Try adjusting your filters or search terms."}
                                     />
                                 </td>
                             </tr>

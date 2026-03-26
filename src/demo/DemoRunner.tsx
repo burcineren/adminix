@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { AdminPanel } from "@/components/AdminPanel";
 import { useAdminStore } from "@/core/store";
+import { useI18n, type Language } from "@/core/i18n";
 import { DEMO_RESOURCES } from "./examples";
 import { Button } from "@/ui/Button";
 import { Card } from "@/ui/Misc";
@@ -47,7 +48,7 @@ type DemoMode = "home" | "dashboard" | "zero-config" | "playground" | "docs";
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function DemoRunner() {
-    // Restore mode from local storage or default to 'home'
+    const { language, setLanguage } = useI18n();
     const [mode, setModeState] = useState<DemoMode>(() => {
         if (typeof window !== "undefined") {
             const saved = localStorage.getItem("autoadmin_demo_mode");
@@ -63,7 +64,6 @@ export function DemoRunner() {
 
     const darkMode = useAdminStore((s) => s.darkMode);
 
-    // Synchronize dark mode class globally (for landing page / docs as well)
     useEffect(() => {
         if (darkMode) {
             document.documentElement.classList.add("dark");
@@ -74,7 +74,6 @@ export function DemoRunner() {
 
     return (
         <div className="flex h-screen w-full flex-col bg-[hsl(var(--background))] overflow-hidden">
-            {/* Top Navigation (Storybook-style) */}
             <header className="flex h-14 w-full items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-6 shrink-0 z-50">
                 <div className="flex items-center gap-4">
                     <button
@@ -93,10 +92,10 @@ export function DemoRunner() {
 
                 <nav className="hidden md:flex items-center gap-1">
                     {[
-                        { id: "home", label: "Home", icon: Home },
-                        { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-                        { id: "zero-config", label: "Shorthand", icon: Wand2 },
-                        { id: "playground", label: "Playground", icon: Code2 },
+                        { id: "home", label: language === 'tr' ? 'Ana Sayfa' : 'Home', icon: Home },
+                        { id: "dashboard", label: language === 'tr' ? 'Panel' : 'Dashboard', icon: LayoutDashboard },
+                        { id: "zero-config", label: language === 'tr' ? 'Hızlı Kurulum' : 'Shorthand', icon: Wand2 },
+                        { id: "playground", label: language === 'tr' ? 'Oyun Alanı' : 'Playground', icon: Code2 },
                     ].map((item) => (
                         <Button
                             key={item.id}
@@ -114,7 +113,26 @@ export function DemoRunner() {
                     ))}
                 </nav>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1 bg-[hsl(var(--muted)/0.5)] rounded-md p-0.5 border border-[hsl(var(--border))]">
+                        {[
+                            { label: "EN", value: "en" },
+                            { label: "TR", value: "tr" },
+                        ].map((lang) => (
+                            <button
+                                key={lang.value}
+                                onClick={() => setLanguage(lang.value as Language)}
+                                className={cn(
+                                    "px-2 py-1 text-[10px] font-bold rounded transition-all",
+                                    language === lang.value
+                                        ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm"
+                                        : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]",
+                                )}
+                            >
+                                {lang.label}
+                            </button>
+                        ))}
+                    </div>
                     <Button
                         variant={mode === "docs" ? "secondary" : "outline"}
                         size="sm"
@@ -125,7 +143,7 @@ export function DemoRunner() {
                         onClick={() => setMode("docs")}
                     >
                         <BookOpen className="h-4 w-4" />
-                        Documentation
+                        {language === 'tr' ? 'Dokümantasyon' : 'Documentation'}
                     </Button>
                 </div>
             </header>

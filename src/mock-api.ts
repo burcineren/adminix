@@ -257,8 +257,54 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
     return json(paginate(settings as unknown as Record<string, unknown>[], getParams()));
   }
 
+  // ── Generic /api/ Falling Back for Shorthand/Test Resources ──────────────
+  if (url.includes("/api/")) {
+    await delay(150);
+    
+    // Use an in-memory storage for arbitrary resources
+    if (!window.__mock_storage) window.__mock_storage = {};
+    const resourceName = url.split("/api/")[1].split("/")[0].split("?")[0];
+    if (!window.__mock_storage[resourceName]) {
+      window.__mock_storage[resourceName] = [
+        { id: 1, name: "Sample Item", status: "Active", createdAt: new Date().toISOString() }
+      ];
+    }
+    
+    let items = window.__mock_storage[resourceName];
+
+    if (method === "GET" && !url.match(new RegExp(`/api/${resourceName}/\\d+`))) {
+      return json(paginate(items, getParams()));
+    }
+    
+    if (method === "POST") {
+      const body = getBody();
+      const item = { id: generateId(), ...body };
+      items.push(item);
+      return json(item, 201);
+    }
+    
+    if (method === "PUT") {
+      const id = getId();
+      const body = getBody();
+      window.__mock_storage[resourceName] = items.map((i: any) => i.id === id ? { ...i, ...body } : i);
+      return json(window.__mock_storage[resourceName].find((i: any) => i.id === id));
+    }
+    
+    if (method === "DELETE") {
+      const id = getId();
+      window.__mock_storage[resourceName] = items.filter((i: any) => i.id !== id);
+      return json({ success: true });
+    }
+  }
+
   return originalFetch(input, init);
 };
+
+declare global {
+  interface Window {
+    __mock_storage: Record<string, any[]>;
+  }
+}
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));

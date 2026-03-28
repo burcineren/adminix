@@ -151,9 +151,9 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
 
                     {/* ── Demo Preview Mockup ────────────────────────────────────── */}
                     <div className="relative group max-w-5xl mx-auto">
-                        <div className="absolute -inset-1 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-[2rem] blur-2xl opacity-20 group-hover:opacity-30 transition-opacity" />
-                        <Card className="relative p-2 rounded-[2rem] border-4 border-[hsl(var(--card))] bg-[hsl(var(--muted)/0.5)] shadow-2xl overflow-hidden group-hover:-translate-y-2 transition-transform duration-500">
-                            <div className="rounded-[1.5rem] overflow-hidden border border-[hsl(var(--border))] bg-[hsl(var(--background))] aspect-video flex">
+                        <div className="absolute -inset-1 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-4xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity" />
+                        <Card className="relative p-2 rounded-4xl border-4 border-[hsl(var(--card))] bg-[hsl(var(--muted)/0.5)] shadow-2xl overflow-hidden group-hover:-translate-y-2 transition-transform duration-500">
+                            <div className="rounded-3xl overflow-hidden border border-[hsl(var(--border))] bg-[hsl(var(--background))] aspect-video flex">
                                 {/* Sidebar Mockup */}
                                 <div className="w-48 border-r border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 hidden md:flex flex-col gap-4">
                                     <div className="h-6 w-24 rounded bg-[hsl(var(--muted))] animate-pulse" />

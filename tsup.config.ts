@@ -7,7 +7,15 @@ export default defineConfig({
   sourcemap: false,
   clean: true,
   minify: true,
-  external: ['react', 'react-dom', 'tailwindcss'],
+  external: [
+    'react',
+    'react-dom',
+    'tailwindcss',
+    '@tanstack/react-query',
+    '@tanstack/react-table',
+    'lucide-react',
+    'zustand'
+  ],
   outDir: 'dist',
   shims: true,
   target: 'es2019',

@@ -39,6 +39,10 @@ export interface UpdatePayload {
   data: Record<string, unknown>;
 }
 
+export interface CrudMutationContext {
+  previousQueries: [QueryKey, PaginatedResponse | undefined][];
+}
+
 export interface CrudMutationState {
   /** Whether any mutation is currently in progress */
   isAnyPending: boolean;
@@ -119,7 +123,7 @@ export function useCrudActions(
     return { previousQueries };
   };
 
-  const rollbackCache = (context: { previousQueries: [QueryKey, PaginatedResponse | undefined][] } | undefined) => {
+  const rollbackCache = (context: CrudMutationContext | undefined) => {
     if (context?.previousQueries) {
       context.previousQueries.forEach(([key, value]) => {
         queryClient.setQueryData(key, value);
@@ -155,7 +159,7 @@ export function useCrudActions(
       callbacks?.onCreateSuccess?.(data);
     },
     onError: (err: Error, _var, context) => {
-      rollbackCache(context as any);
+      rollbackCache(context);
       if (showToasts) toast.error(`Failed to create ${label}: ${err.message}`);
       callbacks?.onError?.(err, "create");
     },
@@ -187,7 +191,7 @@ export function useCrudActions(
       callbacks?.onUpdateSuccess?.(data);
     },
     onError: (err: Error, _var, context) => {
-      rollbackCache(context as any);
+      rollbackCache(context);
       if (showToasts) toast.error(`Failed to update ${label}: ${err.message}`);
       callbacks?.onError?.(err, "update");
     },
@@ -218,7 +222,7 @@ export function useCrudActions(
       callbacks?.onDeleteSuccess?.(id);
     },
     onError: (err: Error, _var, context) => {
-      rollbackCache(context as any);
+      rollbackCache(context);
       if (showToasts) toast.error(`Failed to delete ${label}: ${err.message}`);
       callbacks?.onError?.(err, "delete");
     },
@@ -252,7 +256,7 @@ export function useCrudActions(
       callbacks?.onBulkDeleteSuccess?.(ids);
     },
     onError: (err: Error, _var, context) => {
-      rollbackCache(context as any);
+      rollbackCache(context);
       if (showToasts) toast.error(`Bulk delete failed: ${err.message}`);
       callbacks?.onError?.(err, "bulkDelete");
     },

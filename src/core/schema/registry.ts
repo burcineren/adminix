@@ -7,7 +7,7 @@ import type { UISchema } from "./types";
  */
 class SchemaRegistry {
     private cache = new Map<string, UISchema>();
-    private readonly STORAGE_KEY = "autoadmin_schema_cache";
+    private readonly STORAGE_KEY = "zeroadmin_schema_cache";
 
     constructor() {
         this.loadFromStorage();

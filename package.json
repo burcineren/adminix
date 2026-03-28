@@ -1,6 +1,6 @@
 {
   "name": "adminix",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Build admin panels from your API with zero configuration - Adminix",
   "keywords": [
     "admin",
@@ -37,7 +37,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:lib": "tsup",
+    "build:lib": "tsup && tailwindcss -i src/index.css -o dist/index.css --minify",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -73,6 +73,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@tailwindcss/cli": "^4.2.2",
     "@tailwindcss/vite": "^4.2.1",
     "@types/jszip": "^3.4.0",
     "@types/node": "^24.10.1",

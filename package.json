@@ -36,7 +36,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsup",
+    "build": "vite build",
+    "build:lib": "tsup",
     "lint": "eslint .",
     "preview": "vite preview"
   },

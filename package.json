@@ -1,22 +1,21 @@
 {
-  "name": "auto-admin",
+  "name": "zeroadmin",
   "version": "0.1.0",
-  "description": "Build a full Admin Panel from your API in 30 seconds.",
+  "description": "Build admin panels from your API with zero configuration",
   "keywords": [
     "admin",
-    "crud",
-    "react",
     "dashboard",
-    "tanstack-table",
-    "react-query"
+    "crud",
+    "generator",
+    "react"
   ],
-  "author": "AutoAdmin Contributors",
+  "author": "",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/burcineren/auto-admin"
+    "url": "https://github.com/burcineren/zero-admin"
   },
-  "homepage": "https://github.com/burcineren/auto-admin#readme",
+  "homepage": "https://github.com/burcineren/zero-admin#readme",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

@@ -9,7 +9,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { GlobalModalManager } from "@/components/GlobalModalManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { validateResourceDefinition } from "@/utils/resource-schema";
-import type { AdminPanelProps, ResourceDefinition } from "@/types/resource-types";
+import type { ZeroAdminProps, ResourceDefinition, ZeroPlugin } from "@/types/resource-types";
 import { cn } from "@/utils/cn";
 import { LayoutDashboard, Zap, Database, Users, AlertCircle, FileWarning, RotateCcw } from "lucide-react";
 import { Card } from "@/ui/Misc";
@@ -29,7 +29,7 @@ const EMPTY_RESOURCES: ResourceDefinition[] = [];
 
 // ── Inner panel (accesses store) ───────────────────────────────────────────────
 
-const AdminPanelInner = memo(function AdminPanelInner({
+const ZeroAdminInner = memo(function ZeroAdminInner({
     resources: propsResources = EMPTY_RESOURCES,
     name,
     endpoint,
@@ -42,7 +42,7 @@ const AdminPanelInner = memo(function AdminPanelInner({
     defaultDarkMode,
     showDashboard: propShowDashboard,
     onError,
-}: AdminPanelProps) {
+}: ZeroAdminProps) {
     const activeResource = useAdminStore((state) => state.activeResource);
     const setActiveResource = useAdminStore((state) => state.setActiveResource);
     const setResources = useAdminStore((state) => state.setResources);
@@ -71,24 +71,24 @@ const AdminPanelInner = memo(function AdminPanelInner({
             }
         }
 
-        // ── Validation Layer (Phase 1: Stability) ────────────────────────────────
+        return list;
+    }, [propsResources, name, endpoint, fields, permissions, propLabel]);
+
+    // ── Validation Layer (Phase 1: Stability) ────────────────────────────────
+    useEffect(() => {
         const errors: string[] = [];
-        list.forEach((res, idx) => {
+        normalizedResources.forEach((res, idx) => {
             const result = validateResourceDefinition(res);
             if (!result.success) {
                 errors.push(`Resource "${res.name || idx}": ${result.errors.join(", ")}`);
             }
         });
 
-        if (errors.length > 0) {
-            setValidationErrors(errors);
-            if (onError) onError(new Error("Schema Validation Failed"));
-        } else {
-            setValidationErrors([]);
+        setValidationErrors(errors);
+        if (errors.length > 0 && onError) {
+            onError(new Error("Schema Validation Failed"));
         }
-
-        return list;
-    }, [propsResources, name, endpoint, fields, permissions, propLabel, onError]);
+    }, [normalizedResources, onError]);
 
     // 2. Determine initial dashboard visibility
     const showDashboard = propShowDashboard ?? normalizedResources.length > 1;
@@ -148,8 +148,8 @@ const AdminPanelInner = memo(function AdminPanelInner({
                             </h2>
                             <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed max-w-md mx-auto">
                                 {t.common.settings === "Ayarlar" 
-                                    ? "<AdminPanel> bileşenine sağlanan kaynak şeması düzeltilmesi gereken yapısal hatalar içeriyor." 
-                                    : "The resource schema provided to <AdminPanel> contains structural errors that must be fixed."}
+                                    ? "<ZeroAdmin> bileşenine sağlanan kaynak şeması düzeltilmesi gereken yapısal hatalar içeriyor." 
+                                    : "The resource schema provided to <ZeroAdmin> contains structural errors that must be fixed."}
                             </p>
                         </div>
 
@@ -170,7 +170,7 @@ const AdminPanelInner = memo(function AdminPanelInner({
                             <Button variant="outline" className="flex-1 font-bold h-11 rounded-xl" onClick={() => window.location.reload()}>
                                 <RotateCcw className="mr-2 h-4 w-4" /> {t.common.settings === "Ayarlar" ? "Yenile" : "Refresh"}
                             </Button>
-                            <Button className="flex-1 font-bold h-11 rounded-xl shadow-lg shadow-[hsl(var(--primary)/20%)]" onClick={() => window.open('https://github.com/google/autoadmin/docs', '_blank')}>
+                            <Button className="flex-1 font-bold h-11 rounded-xl shadow-lg shadow-[hsl(var(--primary)/20%)]" onClick={() => window.open("https://github.com/google/zeroadmin/docs", "_blank")}>
                                 {t.common.settings === "Ayarlar" ? "Dokümantasyon" : "Documentation"}
                             </Button>
                         </div>
@@ -244,12 +244,12 @@ function WelcomeScreen() {
                     </div>
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight">
-                    {t.common.welcome === "Hoş geldiniz" ? "AutoAdmin'e Hoş Geldiniz" : "Welcome to AutoAdmin"}
+                    {t.common.welcome === "Hoş geldiniz" ? "ZeroAdmin'e Hoş Geldiniz" : "Welcome to ZeroAdmin"}
                 </h1>
                 <p className="text-[hsl(var(--muted-foreground))] max-w-md">
                     {t.common.welcome === "Hoş geldiniz" 
-                        ? "Başlamak için yan menüden bir kaynak seçin veya kendi şemanızı AdminPanel bileşenine ekleyin."
-                        : "Select a resource from the sidebar to get started, or add resources to your <AdminPanel> component."
+                        ? "Başlamak için yan menüden bir kaynak seçin veya kendi şemanızı ZeroAdmin bileşenine ekleyin."
+                        : "Select a resource from the sidebar to get started, or add resources to your <ZeroAdmin> component."
                     }
                 </p>
             </div>
@@ -289,11 +289,11 @@ function WelcomeScreen() {
 
 // ── Public API ─────────────────────────────────────────────────────────────────
 
-export function AdminPanel(props: AdminPanelProps) {
+export function ZeroAdmin(props: ZeroAdminProps) {
     return (
         <ErrorBoundary>
             <QueryClientProvider client={queryClient}>
-                <AdminPanelInner {...props} />
+                <ZeroAdminInner {...props} />
             </QueryClientProvider>
         </ErrorBoundary>
     );

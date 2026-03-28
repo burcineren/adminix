@@ -1,7 +1,7 @@
 import { cn } from "@/utils/cn";
 import { useAdminStore } from "@/core/store";
 import { useI18n, type Language } from "@/core/i18n";
-import type { ResourceDefinition, AdminPlugin } from "@/types/resource-types";
+import type { ResourceDefinition, ZeroPlugin } from "@/types/resource-types";
 import {
   LayoutDashboard,
   ChevronRight,
@@ -19,13 +19,13 @@ interface SidebarProps {
   resources: ResourceDefinition[];
   title?: string;
   logo?: React.ReactNode;
-  plugins?: AdminPlugin[];
+  plugins?: ZeroPlugin[];
   showDashboard?: boolean;
 }
 
 export function Sidebar({
   resources,
-  title = "AutoAdmin",
+  title = "ZeroAdmin",
   logo,
   plugins,
   showDashboard = true,
@@ -176,7 +176,7 @@ export function Sidebar({
             {darkMode ? "Light Mode" : "Dark Mode"}
           </button>
           <a
-            href="https://github.com/burcineren/auto-admin"
+            href="https://github.com/burcineren/zeroadmin"
             target="_blank"
             rel="noreferrer"
             className={cn(

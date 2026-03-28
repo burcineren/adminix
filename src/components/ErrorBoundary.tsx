@@ -77,7 +77,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <Button 
                    variant="ghost" 
                    className="w-full text-xs font-bold text-[hsl(var(--muted-foreground))]"
-                   onClick={() => window.open('https://github.com/burcineren/auto-admin/issues', '_blank')}
+                   onClick={() => window.open('https://github.com/burcineren/zeroadmin/issues', '_blank')}
                 >
                   Report a bug
                 </Button>

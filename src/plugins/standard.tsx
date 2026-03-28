@@ -1,11 +1,11 @@
 import { Badge } from "@/ui/Misc";
 import { Info, BarChart2 } from "lucide-react";
-import type { AdminPlugin } from "@/types/resource-types";
+import type { ZeroPlugin } from "@/types/resource-types";
 
 /**
  * A simple stats plugin that shows total count as a badge above the table
  */
-export const statsPlugin = (): AdminPlugin => ({
+export const statsPlugin = (): ZeroPlugin => ({
     name: "stats",
     tableHeader: ({ resource }) => {
         // Note: In a real app, this would probably come from useResource total
@@ -29,12 +29,12 @@ export const statsPlugin = (): AdminPlugin => ({
 /**
  * A sidebar widget plugin that shows a decorative banner
  */
-export const bannerPlugin = (): AdminPlugin => ({
+export const bannerPlugin = (): ZeroPlugin => ({
     name: "banner",
     sidebarWidget: () => (
         <div className="mx-2 mt-4 p-3 rounded-xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(221deg_83%_70%)] text-white overflow-hidden relative group">
             <div className="relative z-10">
-                <p className="text-[10px] font-bold uppercase opacity-80 mb-1">AutoAdmin Pro</p>
+                <p className="text-[10px] font-bold uppercase opacity-80 mb-1">ZeroAdmin Pro</p>
                 <p className="text-xs font-semibold leading-snug">
                     Upgrade to unlock advanced analytics & exports.
                 </p>

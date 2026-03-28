@@ -1,24 +1,14 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ["src/index.ts"],
-  outDir: "dist",
-  format: ["cjs", "esm"],
+  entry: ['src/index.ts', 'src/index.css'],
+  format: ['esm', 'cjs'],
   dts: true,
-  splitting: false,
   sourcemap: true,
   clean: true,
-  external: [
-    "react",
-    "react-dom",
-    "@tanstack/react-query",
-    "@tanstack/react-table",
-    "react-hook-form",
-    "zod",
-    "zustand",
-    "sonner",
-    "lucide-react",
-  ],
-  treeshake: true,
-  minify: false,
+  minify: true,
+  external: ['react', 'react-dom', 'tailwindcss'],
+  outDir: 'dist',
+  shims: true,
+  target: 'es2019',
 });

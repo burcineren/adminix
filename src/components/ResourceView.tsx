@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Plus, Filter, RefreshCw, Download, Database, AlertCircle, Zap } from "lucide-react";
+import { Plus, Filter, RefreshCw, Download, AlertCircle, Zap } from "lucide-react";
 import { useResource } from "@/hooks/useResource";
 import { useAdminStore } from "@/core/store";
 import { DataTable } from "@/components/DataTable";

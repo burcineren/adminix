@@ -6,7 +6,7 @@
 
 import { useMutation, useQueryClient, type UseMutationResult, type QueryKey } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { ResourceDefinition, AdminPlugin } from "@/types/resource-types";
+import type { ResourceDefinition, ZeroPlugin } from "@/types/resource-types";
 import {
   apiClient,
   resolveEndpoints,
@@ -88,7 +88,7 @@ export function useCrudActions(
   const label = resource.label ?? resource.name;
 
   // Collect plugin handlers
-  const allPlugins: AdminPlugin[] = [
+  const allPlugins: ZeroPlugin[] = [
     ...(resource.plugins ?? []),
   ];
 

@@ -1,11 +1,11 @@
 import { BarChart2, Hash, TrendingUp } from "lucide-react";
-import type { AdminPlugin } from "@/types/resource-types";
+import type { ZeroPlugin } from "@/types/resource-types";
 
 /**
  * Analytics Widget Plugin — shows aggregate statistics in the table header
  * and a sidebar overview widget.
  */
-export const analyticsPlugin = (): AdminPlugin => ({
+export const analyticsPlugin = (): ZeroPlugin => ({
     name: "analytics",
     tableHeader: ({ resource }) => (
         <div className="flex items-center gap-4 mb-3">

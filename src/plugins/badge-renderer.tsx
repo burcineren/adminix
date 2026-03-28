@@ -1,4 +1,4 @@
-import type { AdminPlugin, FieldDefinition } from "@/types/resource-types";
+import type { ZeroPlugin, FieldDefinition } from "@/types/resource-types";
 
 /**
  * Badge Renderer Plugin — automatically renders select/enum fields
@@ -51,7 +51,7 @@ function createBadgeRenderer(field: FieldDefinition) {
  * badgeRendererPlugin — automatically applies colored badge rendering
  * to all select/enum fields that don't already have a custom render function.
  */
-export const badgeRendererPlugin = (): AdminPlugin => ({
+export const badgeRendererPlugin = (): ZeroPlugin => ({
     name: "badge-renderer",
     onMutation: (type, data) => {
         // Optional: log mutations for debugging

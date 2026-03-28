@@ -9,7 +9,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { GlobalModalManager } from "@/components/GlobalModalManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { validateResourceDefinition } from "@/utils/resource-schema";
-import type { ZeroAdminProps, ResourceDefinition, ZeroPlugin } from "@/types/resource-types";
+import type { ZeroAdminProps, ResourceDefinition } from "@/types/resource-types";
 import { cn } from "@/utils/cn";
 import { LayoutDashboard, Zap, Database, Users, AlertCircle, FileWarning, RotateCcw } from "lucide-react";
 import { Card } from "@/ui/Misc";
@@ -193,7 +193,7 @@ const ZeroAdminInner = memo(function ZeroAdminInner({
                 title={title}
                 logo={logo}
                 plugins={plugins}
-                showDashboard={showDashboard}
+                showDashboard={propShowDashboard}
             />
 
             <TopBar title={isDashboard ? t.common.dashboard : (currentResource?.label ?? currentResource?.name)} />

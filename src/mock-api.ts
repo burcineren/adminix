@@ -76,8 +76,8 @@ let orders: Order[] = [
 ];
 
 const settings: Setting[] = [
-  { id: "1", key: "site_name", value: "ZeroAdmin Demo", description: "The title of the website", category: "general", isPublic: true, lastUpdated: "2024-03-24" },
-  { id: "2", key: "admin_email", value: "admin@zeroadmin.io", description: "Primary contact email", category: "general", isPublic: false, lastUpdated: "2024-03-24" },
+  { id: "1", key: "site_name", value: "Adminix Demo", description: "The title of the website", category: "general", isPublic: true, lastUpdated: "2024-03-24" },
+  { id: "2", key: "admin_email", value: "admin@adminix.io", description: "Primary contact email", category: "general", isPublic: false, lastUpdated: "2024-03-24" },
   { id: "3", key: "enable_signup", value: "true", description: "Allow new users to register", category: "security", isPublic: true, lastUpdated: "2024-03-20" },
   { id: "4", key: "maintenance_mode", value: "false", description: "Disable site for maintenance", category: "security", isPublic: false, lastUpdated: "2024-03-22" },
   { id: "5", key: "max_upload_size", value: "10", description: "Limit in MB", category: "performance", isPublic: true, lastUpdated: "2024-03-15" },

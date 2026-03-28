@@ -11,7 +11,7 @@ import {
     CheckCircle2,
     Settings
 } from "lucide-react";
-import { ZeroAdmin } from "./ZeroAdmin";
+import { Adminix } from "./Adminix";
 import { VisualSchemaEditor } from "./VisualSchemaEditor";
 import { Card } from "@/ui/Misc";
 import { Button } from "@/ui/Button";
@@ -133,7 +133,7 @@ export function DevPlayground() {
         if (hasError) return;
         setIsExporting(true);
         try {
-            await exportProjectZip([resource], `zeroadmin-project-${resource.name}`);
+            await exportProjectZip([resource], `adminix-project-${resource.name}`);
         } catch (err) {
             console.error(err);
         } finally {
@@ -313,10 +313,10 @@ export function DevPlayground() {
             <main className="flex-1 relative bg-[hsl(var(--muted)/0.05)] overflow-hidden flex flex-col">
                 <div className="h-full w-full overflow-hidden relative">
                     <div key={resource.name} className="absolute inset-0">
-                        <ZeroAdmin
+                        <Adminix
                             resources={[resource]}
                             showDashboard={false}
-                            title="ZeroAdmin Playground"
+                            title="Adminix Playground"
                         />
                     </div>
                 </div>

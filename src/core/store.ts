@@ -41,22 +41,22 @@ export interface AdminState {
 }
 
 export const useAdminStore = create<AdminState>((set) => ({
-  activeResource: typeof window !== "undefined" ? localStorage.getItem("zeroadmin_active_resource") : null,
+  activeResource: typeof window !== "undefined" ? localStorage.getItem("adminix_active_resource") : null,
   setActiveResource: (name) => {
-    localStorage.setItem("zeroadmin_active_resource", name || "");
+    localStorage.setItem("adminix_active_resource", name || "");
     set({ activeResource: name });
   },
 
   darkMode: typeof window !== "undefined" 
-    ? (localStorage.getItem("zeroadmin_dark_mode") === "true" || (!localStorage.getItem("zeroadmin_dark_mode") && window.matchMedia("(prefers-color-scheme: dark)").matches))
+    ? (localStorage.getItem("adminix_dark_mode") === "true" || (!localStorage.getItem("adminix_dark_mode") && window.matchMedia("(prefers-color-scheme: dark)").matches))
     : false,
   toggleDarkMode: () => set((s) => {
     const newVal = !s.darkMode;
-    localStorage.setItem("zeroadmin_dark_mode", String(newVal));
+    localStorage.setItem("adminix_dark_mode", String(newVal));
     return { darkMode: newVal };
   }),
   setDarkMode: (value) => {
-    localStorage.setItem("zeroadmin_dark_mode", String(value));
+    localStorage.setItem("adminix_dark_mode", String(value));
     set({ darkMode: value });
   },
 

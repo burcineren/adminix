@@ -214,7 +214,7 @@ export function createSchemaPlugin(
   return { name, priority, transformFields: transform };
 }
 
-// ── Bridge: Convert existing ZeroPlugin to SchemaPlugin ─────────────────────
+// ── Bridge: Convert existing AdminixPlugin to SchemaPlugin ─────────────────────
 
 /**
  * Build schema-level plugins from the `ResourceConfig`.

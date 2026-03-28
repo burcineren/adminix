@@ -1,10 +1,10 @@
-import type { ZeroPlugin } from "@/types/resource-types";
+import type { AdminixPlugin } from "@/types/resource-types";
 
 /**
  * Charts Plugin — renders mini SVG bar charts as a dashboard widget.
  * Uses pure SVG, no external chart library required.
  */
-export const chartsPlugin = (): ZeroPlugin => ({
+export const chartsPlugin = (): AdminixPlugin => ({
     name: "charts",
     dashboardWidgets: [
         () => {
@@ -60,7 +60,7 @@ export const chartsPlugin = (): ZeroPlugin => ({
 /**
  * Sparkline Plugin — renders a mini sparkline in the table header.
  */
-export const sparklinePlugin = (): ZeroPlugin => ({
+export const sparklinePlugin = (): AdminixPlugin => ({
     name: "sparkline",
     tableHeader: ({ resource }) => {
         const points = [10, 25, 18, 35, 28, 42, 38, 55, 48, 60, 52, 68];

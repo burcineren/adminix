@@ -9,7 +9,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { GlobalModalManager } from "@/components/GlobalModalManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { validateResourceDefinition } from "@/utils/resource-schema";
-import type { ZeroAdminProps, ResourceDefinition } from "@/types/resource-types";
+import type { AdminixProps, ResourceDefinition } from "@/types/resource-types";
 import { cn } from "@/utils/cn";
 import { LayoutDashboard, Zap, Database, Users, AlertCircle, FileWarning, RotateCcw } from "lucide-react";
 import { Card } from "@/ui/Misc";
@@ -29,7 +29,7 @@ const EMPTY_RESOURCES: ResourceDefinition[] = [];
 
 // ── Inner panel (accesses store) ───────────────────────────────────────────────
 
-const ZeroAdminInner = memo(function ZeroAdminInner({
+const AdminixInner = memo(function AdminixInner({
     resources: propsResources = EMPTY_RESOURCES,
     name,
     endpoint,
@@ -42,7 +42,7 @@ const ZeroAdminInner = memo(function ZeroAdminInner({
     defaultDarkMode,
     showDashboard: propShowDashboard,
     onError,
-}: ZeroAdminProps) {
+}: AdminixProps) {
     const activeResource = useAdminStore((state) => state.activeResource);
     const setActiveResource = useAdminStore((state) => state.setActiveResource);
     const setResources = useAdminStore((state) => state.setResources);
@@ -148,8 +148,8 @@ const ZeroAdminInner = memo(function ZeroAdminInner({
                             </h2>
                             <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed max-w-md mx-auto">
                                 {t.common.settings === "Ayarlar" 
-                                    ? "<ZeroAdmin> bileşenine sağlanan kaynak şeması düzeltilmesi gereken yapısal hatalar içeriyor." 
-                                    : "The resource schema provided to <ZeroAdmin> contains structural errors that must be fixed."}
+                                    ? "<Adminix> bileşenine sağlanan kaynak şeması düzeltilmesi gereken yapısal hatalar içeriyor." 
+                                    : "The resource schema provided to <Adminix> contains structural errors that must be fixed."}
                             </p>
                         </div>
 
@@ -170,7 +170,7 @@ const ZeroAdminInner = memo(function ZeroAdminInner({
                             <Button variant="outline" className="flex-1 font-bold h-11 rounded-xl" onClick={() => window.location.reload()}>
                                 <RotateCcw className="mr-2 h-4 w-4" /> {t.common.settings === "Ayarlar" ? "Yenile" : "Refresh"}
                             </Button>
-                            <Button className="flex-1 font-bold h-11 rounded-xl shadow-lg shadow-[hsl(var(--primary)/20%)]" onClick={() => window.open("https://github.com/google/zeroadmin/docs", "_blank")}>
+                            <Button className="flex-1 font-bold h-11 rounded-xl shadow-lg shadow-[hsl(var(--primary)/20%)]" onClick={() => window.open("https://github.com/burcineren/adminix/docs", "_blank")}>
                                 {t.common.settings === "Ayarlar" ? "Dokümantasyon" : "Documentation"}
                             </Button>
                         </div>
@@ -244,12 +244,12 @@ function WelcomeScreen() {
                     </div>
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight">
-                    {t.common.welcome === "Hoş geldiniz" ? "ZeroAdmin'e Hoş Geldiniz" : "Welcome to ZeroAdmin"}
+                    {t.common.welcome === "Hoş geldiniz" ? "Adminix'e Hoş Geldiniz" : "Welcome to Adminix"}
                 </h1>
                 <p className="text-[hsl(var(--muted-foreground))] max-w-md">
                     {t.common.welcome === "Hoş geldiniz" 
-                        ? "Başlamak için yan menüden bir kaynak seçin veya kendi şemanızı ZeroAdmin bileşenine ekleyin."
-                        : "Select a resource from the sidebar to get started, or add resources to your <ZeroAdmin> component."
+                        ? "Başlamak için yan menüden bir kaynak seçin veya kendi şemanızı Adminix bileşenine ekleyin."
+                        : "Select a resource from the sidebar to get started, or add resources to your <Adminix> component."
                     }
                 </p>
             </div>
@@ -289,11 +289,11 @@ function WelcomeScreen() {
 
 // ── Public API ─────────────────────────────────────────────────────────────────
 
-export function ZeroAdmin(props: ZeroAdminProps) {
+export function Adminix(props: AdminixProps) {
     return (
         <ErrorBoundary>
             <QueryClientProvider client={queryClient}>
-                <ZeroAdminInner {...props} />
+                <AdminixInner {...props} />
             </QueryClientProvider>
         </ErrorBoundary>
     );

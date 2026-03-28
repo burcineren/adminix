@@ -1,7 +1,7 @@
 {
-  "name": "zeroadmin",
+  "name": "adminix",
   "version": "0.0.1",
-  "description": "Build admin panels from your API with zero configuration",
+  "description": "Build admin panels from your API with zero configuration - Adminix",
   "keywords": [
     "admin",
     "dashboard",
@@ -9,27 +9,30 @@
     "generator",
     "react"
   ],
-  "author": "",
+  "author": "Burcin Eren",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/burcineren/zero-admin"
+    "url": "git+https://github.com/burcineren/zero-admin.git"
   },
   "homepage": "https://github.com/burcineren/zero-admin#readme",
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "package.json",
+    "README.md",
+    "LICENSE"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
-    "./index.css": "./dist/index.css"
+    "./style.css": "./dist/index.css"
   },
   "scripts": {
     "dev": "vite",

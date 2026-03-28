@@ -1,5 +1,5 @@
 // Public library entry point
-export { ZeroAdmin, ZeroAdmin as AdminPanel } from "./components/ZeroAdmin";
+export { Adminix, Adminix as AdminPanel } from "./components/Adminix";
 export { ResourceView } from "./components/ResourceView";
 export { DataTable } from "./components/DataTable";
 export { FormGenerator } from "./components/FormGenerator";
@@ -109,9 +109,9 @@ export type {
   ResourcePermissions,
   PaginationConfig,
   ApiConfig,
-  ZeroPlugin,
-  ZeroPlugin as AdminPlugin,
+  AdminixPlugin,
+  AdminixPlugin as AdminPlugin,
   RowAction,
-  ZeroAdminProps,
-  ZeroAdminProps as AdminPanelProps,
+  AdminixProps,
+  AdminixProps as AdminPanelProps,
 } from "./types/resource-types";

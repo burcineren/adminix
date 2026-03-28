@@ -91,7 +91,7 @@ export interface ApiConfig {
 
 // ── Plugin ────────────────────────────────────────────────────────────────────
 
-export interface ZeroPlugin {
+export interface AdminixPlugin {
   name: string;
   version?: string;
   // Component injected into the dashboard sidebar
@@ -129,7 +129,7 @@ export interface ResourceDefinition {
   permissions?: ResourcePermissions;
   pagination?: PaginationConfig;
   api?: ApiConfig;
-  plugins?: ZeroPlugin[];
+  plugins?: AdminixPlugin[];
   rowActions?: RowAction[];
   defaultSort?: { field: string; direction: "asc" | "desc" };
   searchable?: boolean;
@@ -140,9 +140,9 @@ export interface ResourceDefinition {
   expandedComponent?: ComponentType<{ data: Record<string, unknown> }>;
 }
 
-// ── ZeroAdmin Props ──────────────────────────────────────────────────────────
+// ── Adminix Props ──────────────────────────────────────────────────────────
 
-export interface ZeroAdminProps {
+export interface AdminixProps {
   // Mult-resource mode
   resources?: ResourceDefinition[];
   
@@ -156,7 +156,7 @@ export interface ZeroAdminProps {
   // General config
   title?: string;
   logo?: React.ReactNode;
-  plugins?: ZeroPlugin[];
+  plugins?: AdminixPlugin[];
   darkMode?: boolean;
   defaultDarkMode?: boolean;
   apiConfig?: ApiConfig;

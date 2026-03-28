@@ -139,7 +139,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
                     <LoadingScreen message="Analyzing API Structure..." />
                     <div className="pb-8 text-center px-6">
                         <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                            ZeroAdmin is analyzing your API response to infer structure, data types, and UI components.
+                            Adminix is analyzing your API response to infer structure, data types, and UI components.
                         </p>
                     </div>
                 </Card>
@@ -150,7 +150,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
                 <Card className="border-2 border-dashed border-[hsl(var(--border))] rounded-xl bg-[hsl(var(--muted)/0.05)] py-20">
                     <EmptyState 
                         title="Waiting for Data"
-                        description={`${label} currently has no records. ZeroAdmin needs at least one record to automatically infer the schema and generate the UI.`}
+                        description={`${label} currently has no records. Adminix needs at least one record to automatically infer the schema and generate the UI.`}
                         icon={Zap}
                         action={{
                             label: "Create First Record",

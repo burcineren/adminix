@@ -7,7 +7,7 @@ import type { ResourceDefinition } from "@/types/resource-types";
  */
 export async function exportProjectZip(
     resources: ResourceDefinition[], 
-    projectName: string = "zeroadmin-project"
+    projectName: string = "adminix-project"
 ) {
     const zip = new JSZip();
 

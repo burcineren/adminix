@@ -1,6 +1,6 @@
 // ── UI Schema Core Types ─────────────────────────────────────────────────────
 //
-// The unified UI Schema format consumed by all ZeroAdmin components.
+// The unified UI Schema format consumed by all Adminix components.
 // Every field in a resource ultimately becomes a UISchemaField.
 
 import type { ComponentType } from "react";
@@ -9,7 +9,7 @@ import type { ZodSchema } from "zod";
 // ── Component Names ──────────────────────────────────────────────────────────
 
 /**
- * Built-in UI component names that ZeroAdmin ships with.
+ * Built-in UI component names that Adminix ships with.
  * Plugins can register additional component names via string literals.
  */
 export type BuiltinComponent =

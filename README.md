@@ -1,4 +1,4 @@
-# 🚀 AutoAdmin
+# 🚀 Adminix
 
 > **Build a full Admin Panel from your API in 30 seconds.**
 
@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://typescriptlang.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
 
-AutoAdmin is a zero-config React library that generates production-ready management dashboards from your REST API instantly. Point to any endpoint, and it auto-detects fields, types, and labels to render a full-featured CRUD interface.
+Adminix is a zero-config React library that generates production-ready management dashboards from your REST API instantly. Point to any endpoint, and it auto-detects fields, types, and labels to render a full-featured CRUD interface.
 
 ## 📺 Live Demo
 ![AutoAdmin Demo](https://raw.githubusercontent.com/google/autoadmin/main/docs/demo.gif)
@@ -30,7 +30,7 @@ AutoAdmin is a zero-config React library that generates production-ready managem
 ## 📦 Installation
 
 ```bash
-npm install auto-admin
+npm install adminix
 ```
 
 ---
@@ -40,7 +40,7 @@ npm install auto-admin
 ### Zero-Config Mode
 
 ```tsx
-import { AdminPanel } from 'auto-admin';
+import { AdminPanel } from 'adminix';
 
 export default function App() {
   return <AdminPanel endpoint="/api/products" />;
@@ -50,7 +50,7 @@ export default function App() {
 ### Schema-Driven Mode
 
 ```tsx
-import { AdminPanel } from 'auto-admin';
+import { AdminPanel } from 'adminix';
 
 const resources = [
   {
@@ -91,7 +91,7 @@ export default function App() {
 ## 🧩 Plugin System
 
 ```tsx
-import { chartsPlugin, analyticsPlugin } from 'auto-admin/plugins';
+import { chartsPlugin, analyticsPlugin } from 'adminix/plugins';
 
 <AdminPanel
   resources={resources}
@@ -116,8 +116,8 @@ Then click the **Documentation** tab in the navigation bar.
 ## 🛠 Development
 
 ```bash
-git clone https://github.com/burcineren/auto-admin.git
-cd auto-admin
+git clone https://github.com/burcineren/zero-admin.git
+cd zero-admin
 npm install
 npm run dev
 ```
@@ -125,7 +125,7 @@ npm run dev
 ### Build the library
 
 ```bash
-npm run build:lib
+npm run build
 ```
 
 ---

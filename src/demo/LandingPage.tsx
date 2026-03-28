@@ -214,7 +214,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">App.tsx</span>
                     </div>
                     <pre className="p-6 font-mono text-sm text-slate-300 leading-relaxed overflow-x-auto min-h-[220px]">
-                        <code>{displayed}<span className={cn("inline-block w-[2px] h-[1em] bg-indigo-400 ml-[1px] align-text-bottom", done && "animate-pulse")} /></code>
+                        <code>{displayed}<span className={cn("inline-block w-[2px] h-[1em] bg-indigo-400 ml-px align-text-bottom", done && "animate-pulse")} /></code>
                     </pre>
                 </Card>
                 <div className="flex justify-center mt-4">

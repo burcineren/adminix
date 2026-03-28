@@ -94,19 +94,24 @@ const SectionHeader = ({ id, title, icon: Icon, description }: { id: string; tit
 export function Documentation() {
     const [activeSection, setActiveSectionState] = useState(() => {
         if (typeof window !== "undefined") {
-            return localStorage.getItem("autoadmin_docs_section") || "intro";
+            return localStorage.getItem("zeroadmin_docs_section") || "intro";
         }
         return "intro";
     });
 
     const setActiveSection = (section: string) => {
         setActiveSectionState(section);
-        localStorage.setItem("autoadmin_docs_section", section);
+        localStorage.setItem("zeroadmin_docs_section", section);
+    };
+
+    const scrollTo = (id: string) => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
     };
 
     useEffect(() => {
         // Initial scroll to persisted section
-        const saved = localStorage.getItem("autoadmin_docs_section");
+        const saved = localStorage.getItem("zeroadmin_docs_section");
         if (saved && saved !== "intro") {
             setTimeout(() => scrollTo(saved), 100);
         }
@@ -129,11 +134,6 @@ export function Documentation() {
 
         return () => observer.disconnect();
     }, []);
-
-    const scrollTo = (id: string) => {
-        const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: "smooth" });
-    };
 
     return (
         <div className="flex h-full w-full bg-[hsl(var(--background))] overflow-hidden">
@@ -209,9 +209,9 @@ export function Documentation() {
                     {/* ── Section: Intro ────────────────────────────────────────── */}
                     <SectionHeader 
                         id="intro"
-                        title="AutoAdmin"
+                        title="ZeroAdmin"
                         icon={BookOpen}
-                        description="AutoAdmin is a zero-config React library that turns any REST API into a production-ready admin panel instantly. No boilerplate, no tedious form wiring, just clean interfaces from a single config."
+                        description="ZeroAdmin is a zero-config React library that turns any REST API into a production-ready admin panel instantly. No boilerplate, no tedious form wiring, just clean interfaces from a single config."
                     />
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
@@ -238,7 +238,7 @@ export function Documentation() {
                         id="quickstart"
                         title="Quick Start"
                         icon={Zap}
-                        description="Get up and running in under 30 seconds. Connect your endpoint and let AutoAdmin do the heavy lifting."
+                        description="Get up and running in under 30 seconds. Connect your endpoint and let ZeroAdmin do the heavy lifting."
                     />
 
                     <div className="space-y-6">
@@ -247,7 +247,7 @@ export function Documentation() {
                                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-[10px] text-white">1</span>
                                 Install the package
                             </p>
-                            <CodeBlock language="bash" code="npm install auto-admin" />
+                            <CodeBlock language="bash" code="npm install zeroadmin" />
                         </div>
 
                         <div>
@@ -255,13 +255,13 @@ export function Documentation() {
                                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-[10px] text-white">2</span>
                                 Initialize the Admin Panel
                             </p>
-                            <CodeBlock code={`import { AdminPanel } from 'auto-admin';
-import 'auto-admin/dist/index.css';
+                            <CodeBlock code={`import { ZeroAdmin } from 'zeroadmin';
+import 'zeroadmin/dist/index.css';
 
 export default function App() {
   return (
     <div className="h-screen w-full">
-      <AdminPanel 
+      <ZeroAdmin 
         endpoint="/api/products" 
         title="Inventory Manager"
       />
@@ -278,7 +278,7 @@ export default function App() {
                         id="concept"
                         title="Core Concept"
                         icon={Layers}
-                        description="AutoAdmin is built around a ResourceDefinition — a simple config object that defines how your data should be perceived and manipulated."
+                        description="ZeroAdmin is built around a ResourceDefinition — a simple config object that defines how your data should be perceived and manipulated."
                     />
 
                     <div className="relative p-6 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 mb-8 flex flex-col items-center justify-center text-center">
@@ -310,7 +310,7 @@ export default function App() {
                         id="fields"
                         title="Field Schema"
                         icon={Blocks}
-                        description="Configure exactly how each field behaves. AutoAdmin uses this to render tables, filters, and forms."
+                        description="Configure exactly how each field behaves. ZeroAdmin uses this to render tables, filters, and forms."
                     />
 
                     <div className="space-y-4">
@@ -365,7 +365,7 @@ export default function App() {
                         id="api"
                         title="API Configuration"
                         icon={Settings}
-                        description="Fine-tune how AutoAdmin communicates with your backend. Support for custom headers, interceptors, and response mapping."
+                        description="Fine-tune how ZeroAdmin communicates with your backend. Support for custom headers, interceptors, and response mapping."
                     />
 
                     <div className="space-y-4">
@@ -375,13 +375,13 @@ export default function App() {
                                 <div>
                                     <h4 className="font-bold text-amber-700 dark:text-amber-400 mb-1">Auth & Interceptors</h4>
                                     <p className="text-sm text-amber-800/70 dark:text-amber-300/60 leading-normal">
-                                        Inject Bearer tokens or handle 401 Unauthorized errors globally. AutoAdmin provides a robust interceptor API that wraps every request.
+                                        Inject Bearer tokens or handle 401 Unauthorized errors globally. ZeroAdmin provides a robust interceptor API that wraps every request.
                                     </p>
                                 </div>
                             </div>
                         </Card>
 
-                        <CodeBlock code={`import { addRequestInterceptor } from 'auto-admin';
+                        <CodeBlock code={`import { addRequestInterceptor } from 'zeroadmin';
 
 // Inject JWT from local storage
 addRequestInterceptor((options) => ({
@@ -400,7 +400,7 @@ addRequestInterceptor((options) => ({
                         id="playground"
                         title="Dashboard Designer"
                         icon={Cpu}
-                        description="AutoAdmin ships with a powerful builder that lets you prototype and test your admin panel in real-time. It's the ultimate tool for rapid development."
+                        description="ZeroAdmin ships with a powerful builder that lets you prototype and test your admin panel in real-time. It's the ultimate tool for rapid development."
                     />
 
                     <div className="space-y-6">
@@ -431,7 +431,7 @@ addRequestInterceptor((options) => ({
                             </div>
                             <h4 className="text-white font-bold tracking-tight">Zero-Config Mode in Designer</h4>
                             <p className="text-slate-400 text-xs max-w-sm leading-relaxed">
-                                Paste a raw API response and AutoAdmin will automatically infer the entire schema, generating fields, types, and labels for you.
+                                Paste a raw API response and ZeroAdmin will automatically infer the entire schema, generating fields, types, and labels for you.
                             </p>
                         </div>
                     </div>
@@ -484,7 +484,7 @@ npm run dev`} />
                         id="plugins"
                         title="Plugin System"
                         icon={Blocks}
-                        description="AutoAdmin is designed for extensibility. Use plugins to modify the schema at runtime or inject custom React components."
+                        description="ZeroAdmin is designed for extensibility. Use plugins to modify the schema at runtime or inject custom React components."
                     />
 
                     <div className="space-y-8">
@@ -493,7 +493,7 @@ npm run dev`} />
                             <p className="text-sm text-[hsl(var(--muted-foreground))] mb-4 leading-relaxed">
                                 Schema plugins can intercept the inference process. For example, you can force all fields ending with <code>_id</code> to be hidden:
                             </p>
-                            <CodeBlock code={`import { registerSchemaPlugin } from 'auto-admin';
+                            <CodeBlock code={`import { registerSchemaPlugin } from 'zeroadmin';
 
 registerSchemaPlugin({
   name: 'hide-internal-ids',
@@ -514,7 +514,7 @@ registerSchemaPlugin({
                             <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed mb-4">
                                 You can register custom React components to handle specific data types globally:
                             </p>
-                            <CodeBlock code={`import { registerComponentMapper } from 'auto-admin';
+                            <CodeBlock code={`import { registerComponentMapper } from 'zeroadmin';
 import MyRichTextEditor from './MyRichTextEditor';
 
 registerComponentMapper('RichText', (props) => (
@@ -528,7 +528,7 @@ registerComponentMapper('RichText', (props) => (
                     <footer className="flex flex-col sm:flex-row items-center justify-between text-xs text-[hsl(var(--muted-foreground))] gap-4">
                         <div className="flex items-center gap-2">
                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                            AutoAdmin Engine 1.0.0-beta
+                            ZeroAdmin Engine 1.0.0-beta
                         </div>
                         <div className="flex gap-6">
                             <a href="#" className="hover:text-[hsl(var(--foreground))] transition-colors flex items-center gap-1.5"><Code2 className="h-3 w-3" /> GitHub</a>

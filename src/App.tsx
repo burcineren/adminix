@@ -2,7 +2,7 @@ import "./mock-api";
 import { DemoRunner } from "./demo/DemoRunner";
 
 /**
- * AutoAdmin Master Demo & Documentation App
+ * ZeroAdmin Master Demo & Documentation App
  * 
  * This is the entry point for the development environment. 
  * It showcases the library's capabilities across different modes:

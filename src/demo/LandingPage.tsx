@@ -47,11 +47,11 @@ function useTypingEffect(text: string, speed = 40) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-const CODE_EXAMPLE = `import { AdminPanel } from 'auto-admin';
+const CODE_EXAMPLE = `import { ZeroAdmin } from 'zeroadmin';
 
 export default function App() {
   return (
-    <AdminPanel
+    <ZeroAdmin
       endpoint="/api/products"
       title="My Store"
     />
@@ -62,7 +62,7 @@ const FEATURES = [
     {
         icon: Zap,
         title: "Zero Config",
-        description: "Point to any REST endpoint. AutoAdmin infers the schema and renders a full CRUD interface.",
+        description: "Point to any REST endpoint. ZeroAdmin infers the schema and renders a full CRUD interface.",
         color: "text-yellow-500",
         bg: "bg-yellow-500/10",
     },
@@ -125,8 +125,8 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                     </h1>
 
                     <p className="text-xl text-[hsl(var(--muted-foreground))] max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-                        AutoAdmin turns any REST API into a production-ready management dashboard instantly. 
-                        Zero boilerplate, zero config, full productivity.
+                        ZeroAdmin turns any REST API into a production-ready management dashboard instantly. 
+                        Zero boilerplate, zero configuration, full productivity.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
@@ -230,13 +230,13 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                 <Card className="flex items-center justify-between p-4 bg-[hsl(var(--card))] border-[hsl(var(--border))]">
                     <div className="flex items-center gap-3">
                         <Terminal className="h-5 w-5 text-[hsl(var(--primary))]" />
-                        <code className="text-sm font-mono text-[hsl(var(--foreground))]">npm install auto-admin</code>
+                        <code className="text-sm font-mono text-[hsl(var(--foreground))]">npm install zeroadmin</code>
                     </div>
                     <Button
                         variant="ghost"
                         size="sm"
                         className="text-[10px] font-bold uppercase tracking-wider"
-                        onClick={() => navigator.clipboard.writeText("npm install auto-admin")}
+                        onClick={() => navigator.clipboard.writeText("npm install zeroadmin")}
                     >
                         Copy
                     </Button>
@@ -250,7 +250,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                         Everything you need, nothing you don&#39;t.
                     </h2>
                     <p className="text-[hsl(var(--muted-foreground))] max-w-lg mx-auto">
-                        AutoAdmin handles the repetitive stuff so you can focus on what makes your product unique.
+                        ZeroAdmin handles the repetitive stuff so you can focus on what makes your product unique.
                     </p>
                 </div>
 
@@ -297,7 +297,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                             variant="outline"
                             size="lg"
                             className="h-11 px-6 font-bold rounded-xl"
-                            onClick={() => window.open("https://github.com/burcineren/auto-admin", "_blank")}
+                            onClick={() => window.open("https://github.com/burcineren/zeroadmin", "_blank")}
                         >
                             <Github className="h-4 w-4 mr-2" /> Star on GitHub
                         </Button>
@@ -310,11 +310,11 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                 <div className="max-w-5xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm font-bold text-[hsl(var(--muted-foreground))]">
                         <Boxes className="h-4 w-4 text-[hsl(var(--primary))]" />
-                        AutoAdmin
+                        ZeroAdmin
                     </div>
                     <div className="flex items-center gap-6 text-xs text-[hsl(var(--muted-foreground))]">
                         <button onClick={() => onNavigate("docs")} className="hover:text-[hsl(var(--foreground))] transition-colors">Documentation</button>
-                        <a href="https://github.com/burcineren/auto-admin" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--foreground))] transition-colors">GitHub</a>
+                        <a href="https://github.com/burcineren/zeroadmin" target="_blank" rel="noopener noreferrer" className="hover:text-[hsl(var(--foreground))] transition-colors">GitHub</a>
                         <span>MIT License</span>
                     </div>
                 </div>

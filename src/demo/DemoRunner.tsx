@@ -8,7 +8,7 @@ import {
     CheckCircle2,
     Home
 } from "lucide-react";
-import { AdminPanel } from "@/components/AdminPanel";
+import { ZeroAdmin } from "@/components/ZeroAdmin";
 import { useAdminStore } from "@/core/store";
 import { useI18n, type Language } from "@/core/i18n";
 import { DEMO_RESOURCES } from "./examples";
@@ -51,7 +51,7 @@ export function DemoRunner() {
     const { language, setLanguage } = useI18n();
     const [mode, setModeState] = useState<DemoMode>(() => {
         if (typeof window !== "undefined") {
-            const saved = localStorage.getItem("autoadmin_demo_mode");
+            const saved = localStorage.getItem("zeroadmin_demo_mode");
             return (saved as DemoMode) || "home";
         }
         return "home";
@@ -59,7 +59,7 @@ export function DemoRunner() {
 
     const setMode = (newMode: DemoMode) => {
         setModeState(newMode);
-        localStorage.setItem("autoadmin_demo_mode", newMode);
+        localStorage.setItem("zeroadmin_demo_mode", newMode);
     };
 
     const darkMode = useAdminStore((s) => s.darkMode);
@@ -84,7 +84,7 @@ export function DemoRunner() {
                             <Boxes className="h-5 w-5" />
                         </div>
                         <div className="flex flex-col -space-y-1">
-                            <span className="text-sm font-black tracking-tighter uppercase italic">AutoAdmin</span>
+                            <span className="text-sm font-black tracking-tighter uppercase italic">ZeroAdmin</span>
                             <span className="text-[10px] font-bold text-[hsl(var(--muted-foreground))] uppercase tracking-widest">v0.1.0 Beta</span>
                         </div>
                     </button>
@@ -161,7 +161,7 @@ export function DemoRunner() {
                     {/* 1. Dashboard Mode: Full Resource Registry */}
                     {mode === "dashboard" && (
                         <div className="h-full animate-in fade-in duration-500">
-                            <AdminPanel
+                            <ZeroAdmin
                                 resources={DEMO_RESOURCES}
                                 title="Corporate Admin"
                             />
@@ -188,7 +188,7 @@ export function DemoRunner() {
                                         </div>
                                     </div>
                                     <pre className="text-indigo-300">
-                                        {`<AdminPanel endpoint="/api/analytics" />`}
+                                        {`<ZeroAdmin endpoint="/api/analytics" />`}
                                     </pre>
                                 </Card>
 
@@ -198,7 +198,7 @@ export function DemoRunner() {
                                 </div>
 
                                 <div className="h-[600px] border border-[hsl(var(--border))] rounded-2xl overflow-hidden shadow-2xl">
-                                    <AdminPanel
+                                    <ZeroAdmin
                                         endpoint="/api/analytics"
                                         name="Inferred Analytics"
                                         title="Shorthand View"

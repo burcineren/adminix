@@ -1,6 +1,6 @@
 {
   "name": "adminix",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Build admin panels from your API with zero configuration - Adminix",
   "keywords": [
     "admin",
@@ -34,6 +34,7 @@
     },
     "./style.css": "./dist/index.css"
   },
+  "style": "./dist/index.css",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

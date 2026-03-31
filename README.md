@@ -41,6 +41,7 @@ npm install adminix
 
 ```tsx
 import { AdminPanel } from 'adminix';
+import 'adminix/style.css'; // Don't forget this!
 
 export default function App() {
   return <AdminPanel endpoint="/api/products" />;
@@ -51,6 +52,7 @@ export default function App() {
 
 ```tsx
 import { AdminPanel } from 'adminix';
+import 'adminix/style.css';
 
 const resources = [
   {

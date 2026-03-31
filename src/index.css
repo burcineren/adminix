@@ -3,66 +3,11 @@
 
 /* ── Adminix Design System (Scoped) ────────────────────────────────────────── */
 
-/* 
-   We scope everything to .adminix-root to avoid leaking styles 
-   into the consumer's global project. 
-*/
-
 .adminix-root {
-  /* Core Foundation - High Specificity */
-  --background: 224 71% 4%;
-  --foreground: 213 31% 91%;
-  
-  --card: 224 71% 6%;
-  --card-foreground: 213 31% 91%;
-  --popover: 224 71% 6%;
-  --popover-foreground: 213 31% 91%;
-  
-  --primary: 217 91% 60%;
-  --primary-foreground: 222 47% 11%;
-  --secondary: 217 33% 18%;
-  --secondary-foreground: 210 40% 98%;
-  
-  --muted: 217 33% 18%;
-  --muted-foreground: 215 20% 65%;
-  --accent: 217 33% 18%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 63% 31%;
-  --destructive-foreground: 210 40% 98%;
-  
-  --border: 217 33% 18%;
-  --input: 217 33% 18%;
-  --ring: 224 76% 48%;
-  --radius: 0.75rem;
-  --sidebar-width: 260px;
-
-  /* Glassmorphism Variables */
-  --glass-bg: rgba(10, 10, 15, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.05);
-  --glass-blur: 16px;
-
-  /* Elevation (Modern Soft Shadows) */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-
-  /* Reset local styles */
-  font-family: "Outfit", "Inter", system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  line-height: 1.6;
-}
-
-/* Force dark mode variables even if the parent doesn't have .dark */
-.adminix-root {
-  color-scheme: dark;
-}
-
-/* Handle light mode toggle if specifically requested */
-.adminix-root:not(.dark) {
+  /* 
+     DEFAULT: LIGHT MODE 
+     We use explicit light mode tokens as baseline.
+  */
   --background: 210 40% 98%;
   --foreground: 224 71% 4%;
   --card: 0 0% 100%;
@@ -82,10 +27,52 @@
   --border: 214 32% 91%;
   --input: 214 32% 91%;
   --ring: 221 83% 53%;
+  --radius: 0.75rem;
+  --sidebar-width: 260px;
   --glass-bg: rgba(255, 255, 255, 0.6);
   --glass-border: rgba(255, 255, 255, 0.125);
   --glass-blur: 12px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  font-family: "Outfit", "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  line-height: 1.6;
   color-scheme: light;
+}
+
+/* 
+   DARK MODE OVERRIDE 
+   Triggers when the .dark class is present on the .adminix-root element.
+*/
+.adminix-root.dark {
+  --background: 224 71% 4%;
+  --foreground: 213 31% 91%;
+  --card: 224 71% 6%;
+  --card-foreground: 213 31% 91%;
+  --popover: 224 71% 6%;
+  --popover-foreground: 213 31% 91%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 222 47% 11%;
+  --secondary: 217 33% 18%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 33% 18%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 217 33% 18%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217 33% 18%;
+  --input: 217 33% 18%;
+  --ring: 224 76% 48%;
+  --glass-bg: rgba(10, 10, 15, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-blur: 16px;
+  color-scheme: dark;
 }
 
 /* Base Styles Scoped */
@@ -99,16 +86,13 @@
   width: 5px;
   height: 5px;
 }
-
 .adminix-root ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .adminix-root ::-webkit-scrollbar-thumb {
   background: hsl(var(--muted-foreground) / 0.2);
   border-radius: 10px;
 }
-
 .adminix-root ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary) / 0.4);
 }
@@ -132,12 +116,16 @@
 .adminix-root .hover-lift {
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
 }
-
 .adminix-root .hover-lift:hover {
   transform: translateY(-4px) scale(1.01);
   box-shadow: var(--shadow-xl);
 }
 
+/* Animations */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
 .adminix-root .skeleton {
   background: linear-gradient(
     90deg,
@@ -149,18 +137,10 @@
   animation: shimmer 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
   border-radius: var(--radius);
 }
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* Animations (Global reach is okay for keyframes) */
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 .adminix-root .animate-slide-up {
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

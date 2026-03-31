@@ -1,4 +1,5 @@
 // Public library entry point
+import "./index.css";
 export { Adminix, Adminix as AdminPanel } from "./components/Adminix";
 export { ResourceView } from "./components/ResourceView";
 export { DataTable } from "./components/DataTable";

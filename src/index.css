@@ -1,70 +1,28 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-/* ── Adminix Design System (Premium Tokens) ────────────────────────────────── */
+/* ── Adminix Design System (Scoped) ────────────────────────────────────────── */
 
-:root {
-  /* Core Foundation */
-  --background: 210 40% 98%;
-  --foreground: 224 71% 4%;
-  
-  /* Surface Layers (Light) */
-  --card: 0 0% 100%;
-  --card-foreground: 224 71% 4%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 224 71% 4%;
-  
-  /* Brand System */
-  --primary: 221 83% 53%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222 47% 11%;
-  
-  /* Semantic Tones */
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222 47% 11%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
-  
-  /* Structural Elements */
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 221 83% 53%;
-  --radius: 0.75rem;
-  --sidebar-width: 260px;
+/* 
+   We scope everything to .adminix-root to avoid leaking styles 
+   into the consumer's global project. 
+*/
 
-  /* Elevation (Modern Soft Shadows) */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-
-  /* Glassmorphism Variables */
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.125);
-  --glass-blur: 12px;
-}
-
-.dark {
-  /* Core Foundation (Deep Indigo-Blue Black) */
+.adminix-root {
+  /* Core Foundation - High Specificity */
   --background: 224 71% 4%;
   --foreground: 213 31% 91%;
   
-  /* Surface Layers (Deep Ocean Surface) */
   --card: 224 71% 6%;
   --card-foreground: 213 31% 91%;
   --popover: 224 71% 6%;
   --popover-foreground: 213 31% 91%;
   
-  /* Brand System (Vibrant & Glowing) */
   --primary: 217 91% 60%;
   --primary-foreground: 222 47% 11%;
   --secondary: 217 33% 18%;
   --secondary-foreground: 210 40% 98%;
   
-  /* Semantic Tones */
   --muted: 217 33% 18%;
   --muted-foreground: 215 20% 65%;
   --accent: 217 33% 18%;
@@ -72,66 +30,91 @@
   --destructive: 0 63% 31%;
   --destructive-foreground: 210 40% 98%;
   
-  /* Structural Elements */
   --border: 217 33% 18%;
   --input: 217 33% 18%;
   --ring: 224 76% 48%;
+  --radius: 0.75rem;
+  --sidebar-width: 260px;
 
-  /* Glassmorphism Variables (Dark) */
+  /* Glassmorphism Variables */
   --glass-bg: rgba(10, 10, 15, 0.7);
   --glass-border: rgba(255, 255, 255, 0.05);
   --glass-blur: 16px;
-}
 
-/* ── Base Styles (Anti-Gravity Smoothing) ─────────────────────────────────── */
+  /* Elevation (Modern Soft Shadows) */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
-* {
-  box-sizing: border-box;
-  border-color: hsl(var(--border) / 0.5);
-  outline-color: hsl(var(--ring) / 0.5);
-}
-
-html {
+  /* Reset local styles */
   font-family: "Outfit", "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: smooth;
-  height: 100%;
-}
-
-body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
   line-height: 1.6;
 }
 
-/* Premium Scrollbars */
-::-webkit-scrollbar {
+/* Force dark mode variables even if the parent doesn't have .dark */
+.adminix-root {
+  color-scheme: dark;
+}
+
+/* Handle light mode toggle if specifically requested */
+.adminix-root:not(.dark) {
+  --background: 210 40% 98%;
+  --foreground: 224 71% 4%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 71% 4%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 71% 4%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 221 83% 53%;
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.125);
+  --glass-blur: 12px;
+  color-scheme: light;
+}
+
+/* Base Styles Scoped */
+.adminix-root * {
+  box-sizing: border-box;
+  border-color: hsl(var(--border) / 0.5);
+}
+
+/* Premium Scrollbars Scoped */
+.adminix-root ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
 
-::-webkit-scrollbar-track {
+.adminix-root ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
+.adminix-root ::-webkit-scrollbar-thumb {
   background: hsl(var(--muted-foreground) / 0.2);
   border-radius: 10px;
-  transition: all 0.3s ease;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.adminix-root ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary) / 0.4);
 }
 
-/* ── Design System Utilities ──────────────────────────────────────────────── */
-
-/* Glass Utility Classes (For immediate use in components) */
-.glass {
+/* Glass Utility Classes Scoped */
+.adminix-root .glass {
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -139,33 +122,23 @@ body {
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
 }
 
-.glass-card {
+.adminix-root .glass-card {
   background: linear-gradient(135deg, var(--glass-bg), rgba(255, 255, 255, 0.05));
   backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
 }
 
-/* Interaction Effects */
-.hover-lift {
+/* Interaction Scoped */
+.adminix-root .hover-lift {
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
 }
 
-.hover-lift:hover {
+.adminix-root .hover-lift:hover {
   transform: translateY(-4px) scale(1.01);
   box-shadow: var(--shadow-xl);
 }
 
-.state-transition {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Skeleton Shimmer Engine */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton {
+.adminix-root .skeleton {
   background: linear-gradient(
     90deg,
     hsl(var(--muted)) 25%,
@@ -177,27 +150,17 @@ body {
   border-radius: var(--radius);
 }
 
-/* Specialized Animations (Engine-Ready) */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Animations (Global reach is okay for keyframes) */
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes scaleUp {
-  from { opacity: 0; transform: scale(0.97) translateY(4px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.animate-slide-up {
+.adminix-root .animate-slide-up {
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-scale-up {
-  animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Focus Ring Management */
-*:focus-visible {
-  outline: 2px solid hsl(var(--ring) / 0.5);
-  outline-offset: 2px;
 }

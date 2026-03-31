@@ -19,4 +19,5 @@ export default defineConfig({
   outDir: 'dist',
   shims: true,
   target: 'es2019',
+  injectStyle: true,
 });

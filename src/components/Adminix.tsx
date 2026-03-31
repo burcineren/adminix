@@ -184,7 +184,8 @@ const AdminixInner = memo(function AdminixInner({
     const isDashboard = activeResource === "dashboard";
 
     return (
-        <div className={cn("relative h-full w-full overflow-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))]")}>
+        <div className={cn("adminix-root", darkMode && "dark", "h-full w-full")}>
+            <div className={cn("relative h-full w-full overflow-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))]")}>
             {/* Core engine components */}
             <GlobalModalManager />
 
@@ -223,7 +224,8 @@ const AdminixInner = memo(function AdminixInner({
                 }}
             />
         </div>
-    );
+    </div>
+);
 });
 
 // ── Welcome fallback ──────────────────────────────────────────────────────────

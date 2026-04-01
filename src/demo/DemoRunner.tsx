@@ -6,7 +6,9 @@ import {
     Boxes,
     Wand2,
     CheckCircle2,
-    Home
+    Home,
+    Moon,
+    Sun
 } from "lucide-react";
 import { Adminix } from "@/components/Adminix";
 import { useAdminStore } from "@/core/store";
@@ -73,7 +75,7 @@ export function DemoRunner() {
     }, [darkMode]);
 
     return (
-        <div className="flex h-screen w-full flex-col bg-[hsl(var(--background))] overflow-hidden">
+        <div className="adminix-root flex h-screen w-full flex-col bg-[hsl(var(--background))] overflow-hidden">
             <header className="flex h-14 w-full items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-6 shrink-0 z-50">
                 <div className="flex items-center gap-4">
                     <button
@@ -133,6 +135,18 @@ export function DemoRunner() {
                             </button>
                         ))}
                     </div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-9 h-9 p-0 rounded-md bg-[hsl(var(--muted)/0.5)] border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]"
+                        onClick={() => useAdminStore.getState().toggleDarkMode()}
+                    >
+                        {darkMode ? (
+                            <Sun className="h-4 w-4 text-amber-400" />
+                        ) : (
+                            <Moon className="h-4 w-4 text-indigo-400" />
+                        )}
+                    </Button>
                     <Button
                         variant={mode === "docs" ? "secondary" : "outline"}
                         size="sm"

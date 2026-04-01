@@ -22,7 +22,6 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "package.json",
     "README.md",
     "LICENSE"
   ],
@@ -35,6 +34,9 @@
     "./style.css": "./dist/index.css"
   },
   "style": "./dist/index.css",
+  "bin": {
+    "adminix": "./dist/cli.cjs"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -64,8 +66,12 @@
     "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "commander": "^13.1.0",
+    "fs-extra": "^11.3.4",
     "jszip": "^3.10.1",
     "lucide-react": "^0.577.0",
+    "picocolors": "^1.1.1",
+    "prompts": "^2.4.2",
     "react-hook-form": "^7.71.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
@@ -76,8 +82,10 @@
     "@eslint/js": "^9.39.1",
     "@tailwindcss/cli": "^4.2.2",
     "@tailwindcss/vite": "^4.2.1",
+    "@types/fs-extra": "^11.0.4",
     "@types/jszip": "^3.4.0",
     "@types/node": "^24.10.1",
+    "@types/prompts": "^2.4.9",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",

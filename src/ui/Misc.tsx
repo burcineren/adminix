@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
-import { Loader2, Inbox, AlertCircle, RefreshCw } from "lucide-react";
+import { Loader2, Inbox, RefreshCw } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "./Button";
 
@@ -116,7 +116,7 @@ export function Skeleton({ className }: { className?: string }) {
 export function Separator({ className }: { className?: string }) {
     return (
         <div
-            className={cn("shrink-0 bg-[hsl(var(--border))] h-[1px] w-full", className)}
+            className={cn("shrink-0 bg-[hsl(var(--border))] h-px w-full", className)}
         />
     );
 }

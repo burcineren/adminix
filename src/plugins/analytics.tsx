@@ -12,19 +12,19 @@ export const analyticsPlugin = (): AdminixPlugin => ({
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[hsl(var(--muted)/0.5)] text-[hsl(var(--muted-foreground))]">
                 <Hash className="h-3 w-3" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">
-                    {resource.fields.length} Fields
+                    {resource.fields?.length || 0} Fields
                 </span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[hsl(var(--muted)/0.5)] text-[hsl(var(--muted-foreground))]">
                 <BarChart2 className="h-3 w-3" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">
-                    {resource.fields.filter(f => f.sortable).length} Sortable
+                    {resource.fields?.filter(f => f.sortable).length || 0} Sortable
                 </span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[hsl(var(--muted)/0.5)] text-[hsl(var(--muted-foreground))]">
                 <TrendingUp className="h-3 w-3" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">
-                    {resource.fields.filter(f => f.searchable).length} Searchable
+                    {resource.fields?.filter(f => f.searchable).length || 0} Searchable
                 </span>
             </div>
         </div>

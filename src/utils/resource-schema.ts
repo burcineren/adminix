@@ -52,7 +52,7 @@ export const ResourceDefinitionSchema = z.object({
     endpoint: z.string().min(1, "Endpoint is required"),
     label: z.string().optional(),
     description: z.string().optional(),
-    fields: z.array(FieldDefinitionSchema).min(0),
+    fields: z.array(FieldDefinitionSchema).optional(),
     permissions: PermissionsSchema,
     pagination: PaginationSchema,
     searchable: z.boolean().optional(),

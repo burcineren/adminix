@@ -125,7 +125,7 @@ export interface ResourceDefinition {
   label?: string;
   description?: string;
   icon?: ComponentType<{ className?: string }>;
-  fields: FieldDefinition[];
+  fields?: FieldDefinition[];
   permissions?: ResourcePermissions;
   pagination?: PaginationConfig;
   api?: ApiConfig;

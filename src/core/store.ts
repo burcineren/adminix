@@ -48,8 +48,8 @@ export const useAdminStore = create<AdminState>((set) => ({
   },
 
   darkMode: typeof window !== "undefined" 
-    ? (localStorage.getItem("adminix_dark_mode") === "true" || (!localStorage.getItem("adminix_dark_mode") && window.matchMedia("(prefers-color-scheme: dark)").matches))
-    : false,
+    ? (localStorage.getItem("adminix_dark_mode") === "true" || (!localStorage.getItem("adminix_dark_mode") && (window.matchMedia("(prefers-color-scheme: dark)").matches || true)))
+    : true,
   toggleDarkMode: () => set((s) => {
     const newVal = !s.darkMode;
     localStorage.setItem("adminix_dark_mode", String(newVal));

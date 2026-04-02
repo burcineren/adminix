@@ -9,7 +9,8 @@ import {
     Sparkles,
     Download,
     CheckCircle2,
-    Settings
+    Settings,
+    Database
 } from "lucide-react";
 import { Adminix } from "./Adminix";
 import { VisualSchemaEditor } from "./VisualSchemaEditor";
@@ -57,20 +58,22 @@ export function DevPlayground() {
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isExporting, setIsExporting] = useState(false);
-    const [editMode, setEditMode] = useState<"visual" | "json">("visual");
+    const [editMode, setEditMode] = useState<"visual" | "json" | "mock">("visual");
+    const [mockJsonText, setMockJsonText] = useState("[\n  { \"id\": 1, \"name\": \"Pro Headphones\", \"price\": 199.99, \"category\": \"electronics\", \"inStock\": true },\n  { \"id\": 2, \"name\": \"Mechanical Keyboard\", \"price\": 129.99, \"category\": \"electronics\", \"inStock\": true },\n  { \"id\": 3, \"name\": \"USB-C Cable\", \"price\": 19.99, \"category\": \"electronics\", \"inStock\": false }\n]");
     const [isSyncing, setIsSyncing] = useState(false);
 
     // Debounce the JSON text for preview updates (300ms)
     const debouncedJson = useDebounce(jsonText, 300);
+    const debouncedMockJson = useDebounce(mockJsonText, 300);
 
     // Track syncing state
     useEffect(() => {
-        if (jsonText !== debouncedJson) {
+        if (jsonText !== debouncedJson || mockJsonText !== debouncedMockJson) {
             setIsSyncing(true);
         } else {
             setIsSyncing(false);
         }
-    }, [jsonText, debouncedJson]);
+    }, [jsonText, debouncedJson, mockJsonText, debouncedMockJson]);
 
     // Parse and validate when debounced text changes
     const processSchema = useCallback((text: string) => {
@@ -97,17 +100,38 @@ export function DevPlayground() {
         }
     }, []);
 
-    // Effect: sync JSON editor -> state
+    // Effect: sync JSON editors -> state
     const [lastProcessed, setLastProcessed] = useState(debouncedJson);
-    if (debouncedJson !== lastProcessed) {
-        setLastProcessed(debouncedJson);
-        processSchema(debouncedJson);
-    }
+    const [lastMockProcessed, setLastMockProcessed] = useState(debouncedMockJson);
+
+    useEffect(() => {
+        if (debouncedJson !== lastProcessed) {
+            setLastProcessed(debouncedJson);
+            processSchema(debouncedJson);
+        }
+    }, [debouncedJson, lastProcessed, processSchema]);
+
+    useEffect(() => {
+        if (debouncedMockJson !== lastMockProcessed) {
+            setLastMockProcessed(debouncedMockJson);
+            try {
+                const parsedData = JSON.parse(debouncedMockJson);
+                if (Array.isArray(parsedData)) {
+                    setResource(prev => ({ ...prev, data: parsedData }));
+                }
+            } catch {
+                // Ignore mock parse errors for now, main validation handles UI
+            }
+        }
+    }, [debouncedMockJson, lastMockProcessed]);
 
     // Handler: sync state -> JSON editor
     const handleVisualChange = (updated: ResourceDefinition) => {
         setResource(updated);
         setJsonText(JSON.stringify(updated, null, 2));
+        if (updated.data) {
+            setMockJsonText(JSON.stringify(updated.data, null, 2));
+        }
     };
 
     const hasError = !!parseError;
@@ -115,8 +139,13 @@ export function DevPlayground() {
 
     const handleFormat = () => {
         try {
-            const parsed = JSON.parse(jsonText);
-            setJsonText(JSON.stringify(parsed, null, 2));
+            if (editMode === "json") {
+                const parsed = JSON.parse(jsonText);
+                setJsonText(JSON.stringify(parsed, null, 2));
+            } else if (editMode === "mock") {
+                const parsed = JSON.parse(mockJsonText);
+                setMockJsonText(JSON.stringify(parsed, null, 2));
+            }
         } catch (e) {
             setParseError((e as Error).message);
         }
@@ -170,7 +199,7 @@ export function DevPlayground() {
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleReset} title="Reset to default">
                             <Undo2 className="h-3.5 w-3.5" />
                         </Button>
-                        {editMode === "json" && (
+                        {(editMode === "json" || editMode === "mock") && (
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleFormat} title="Format JSON">
                                 <RefreshCw className="h-3.5 w-3.5" />
                             </Button>
@@ -204,6 +233,18 @@ export function DevPlayground() {
                         <Code2 className="h-3 w-3" />
                         JSON Config
                     </button>
+                    <button
+                        onClick={() => setEditMode("mock")}
+                        className={cn(
+                            "flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all",
+                            editMode === "mock" 
+                                ? "bg-[hsl(var(--card))] text-[hsl(var(--primary))] shadow-sm" 
+                                : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--card)/0.5)]"
+                        )}
+                    >
+                        <Database className="h-3 w-3" />
+                        Mock Data
+                    </button>
                 </div>
 
                 <div className="flex-1 relative overflow-hidden group flex flex-col">
@@ -219,6 +260,19 @@ export function DevPlayground() {
                                 hasError ? "selection:bg-red-500/20" : "selection:bg-[hsl(var(--primary)/0.2)]"
                             )}
                             placeholder="Paste your ResourceDefinition JSON here..."
+                        />
+                    ) : editMode === "mock" ? (
+                        <textarea
+                            value={mockJsonText}
+                            onChange={(e) => setMockJsonText(e.target.value)}
+                            spellCheck={false}
+                            className={cn(
+                                "absolute inset-0 w-full h-full p-6 font-mono text-xs leading-relaxed transition-all",
+                                "bg-transparent resize-none border-none outline-none text-[hsl(var(--foreground))]",
+                                "placeholder:text-[hsl(var(--muted-foreground))]/50",
+                                "selection:bg-[hsl(var(--primary)/0.2)]"
+                            )}
+                            placeholder="Paste your mock JSON array data here..."
                         />
                     ) : (
                         <VisualSchemaEditor 

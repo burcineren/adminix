@@ -15,6 +15,9 @@ import {
 import {
     Eye,
     Settings2,
+    LayoutList,
+    Maximize2,
+    Minimize2
 } from "lucide-react";
 import type { ResourceDefinition } from "@/types/resource-types";
 import type { UISchemaField } from "@/core/schema/types";
@@ -64,6 +67,7 @@ export const DataTable = memo(function DataTable({
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
     const [expanded, setExpanded] = useState<ExpandedState>({});
+    const [density, setDensity] = useState<"compact" | "standard" | "comfortable">("standard");
 
     const columns = useTableColumns({
         resource,
@@ -148,6 +152,34 @@ export const DataTable = memo(function DataTable({
                             };
                         })}
                 />
+                
+                <Dropdown
+                    trigger={
+                        <Button variant="ghost" size="icon" className="h-9 w-9">
+                            <LayoutList className="h-4 w-4" />
+                        </Button>
+                    }
+                    items={[
+                        { 
+                            label: language === 'tr' ? 'Sıkışık' : 'Compact', 
+                            onClick: () => setDensity("compact"),
+                            icon: <Minimize2 className="h-3.5 w-3.5" />,
+                            active: density === "compact"
+                        },
+                        { 
+                            label: language === 'tr' ? 'Standart' : 'Standard', 
+                            onClick: () => setDensity("standard"),
+                            icon: <LayoutList className="h-3.5 w-3.5" />,
+                            active: density === "standard"
+                        },
+                        { 
+                            label: language === 'tr' ? 'Rahat' : 'Comfortable', 
+                            onClick: () => setDensity("comfortable"),
+                            icon: <Maximize2 className="h-3.5 w-3.5" />,
+                            active: density === "comfortable"
+                        }
+                    ]}
+                />
             </div>
 
             {/* Table */}
@@ -155,11 +187,15 @@ export const DataTable = memo(function DataTable({
                 <table className="w-full text-sm">
                     <thead>
                         {table.getHeaderGroups().map((hg) => (
-                            <tr key={hg.id} className="border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)]">
+                            <tr key={hg.id} className="border-b border-[hsl(var(--border))] bg-transparent">
                                 {hg.headers.map((header) => (
                                     <th
                                         key={header.id}
-                                        className="whitespace-nowrap px-4 py-3 text-left text-[hsl(var(--muted-foreground))] first:pl-4"
+                                        className={cn(
+                                            "sticky top-0 z-10 backdrop-blur-md bg-[hsl(var(--muted)/0.8)]",
+                                            "whitespace-nowrap px-4 text-left text-[hsl(var(--muted-foreground))] font-bold uppercase text-[10px] tracking-widest first:pl-6",
+                                            density === "compact" ? "py-2" : density === "comfortable" ? "py-5" : "py-4"
+                                        )}
                                         style={{ width: header.getSize() }}
                                     >
                                         {header.isPlaceholder
@@ -203,11 +239,17 @@ export const DataTable = memo(function DataTable({
                                         className={cn(
                                             "border-b border-[hsl(var(--border))] transition-colors",
                                             "hover:bg-[hsl(var(--muted)/0.4)]",
-                                            row.getIsSelected() && "bg-[hsl(var(--primary)/0.05)]"
+                                            row.getIsSelected() && "bg-[hsl(var(--primary)/2%)]"
                                         )}
                                     >
                                         {row.getVisibleCells().map((cell) => (
-                                            <td key={cell.id} className="px-4 py-3 text-sm">
+                                            <td 
+                                                key={cell.id} 
+                                                className={cn(
+                                                    "px-4 text-sm transition-all first:pl-6",
+                                                    density === "compact" ? "py-1.5" : density === "comfortable" ? "py-5" : "py-3.5"
+                                                )}
+                                            >
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </td>
                                         ))}

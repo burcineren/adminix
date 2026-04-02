@@ -52,11 +52,10 @@ export function Sidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          "absolute top-0 left-0 z-30 flex h-full flex-col",
+          "z-30 flex h-full flex-col",
           "border-r border-[hsl(var(--border))] bg-[hsl(var(--card))]",
-          "transition-transform duration-300 ease-in-out",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full",
-          "w-[260px]",
+          "transition-all duration-300 ease-in-out overflow-hidden shrink-0",
+          sidebarOpen ? "w-[260px] opacity-100" : "w-0 opacity-0 border-none",
         )}
       >
         {/* Logo */}
@@ -199,7 +198,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ title }: TopBarProps) {
-  const { toggleSidebar, sidebarOpen } = useAdminStore();
+  const { toggleSidebar } = useAdminStore();
   const { language, setLanguage } = useI18n();
 
   const languages: { label: string; value: Language }[] = [
@@ -210,10 +209,8 @@ export function TopBar({ title }: TopBarProps) {
   return (
     <header
       className={cn(
-        "absolute top-0 right-0 z-10 flex h-14 items-center gap-3 border-b border-[hsl(var(--border))]",
+        "absolute top-0 left-0 right-0 z-10 flex h-14 items-center gap-3 border-b border-[hsl(var(--border))]",
         "bg-[hsl(var(--background)/0.95)] backdrop-blur-sm px-4",
-        "transition-all duration-300",
-        sidebarOpen ? "left-[260px]" : "left-0",
       )}
     >
       <Button

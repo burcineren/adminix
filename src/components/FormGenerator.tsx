@@ -184,13 +184,15 @@ export const FormGenerator = React.memo(({
 }: FormGeneratorProps) => {
     const { t } = useI18n();
 
-    // Only render fields that are marked for visibility in the current mode
+    // Total fields in the schema vs fields visible in this mode
+    const totalFields = fields.length;
     const visibleFields = React.useMemo(() => 
-        fields.filter((f) => mode === "create" ? f.showInCreate : f.showInEdit),
+        fields.filter((f) => mode === "create" ? f.showInCreate !== false : f.showInEdit !== false),
         [fields, mode]
     );
 
-    const isZeroConfigEmpty = visibleFields.length === 0 && mode === "create";
+    const isZeroConfigEmpty = totalFields === 0 && mode === "create";
+    const hasNoVisibleFields = totalFields > 0 && visibleFields.length === 0;
 
     // Build validator once - if zero config, use JSON validator
     const validationSchema = React.useMemo(() => {
@@ -252,6 +254,14 @@ export const FormGenerator = React.memo(({
                                 />
                             )}
                         />
+                    </div>
+                ) : hasNoVisibleFields ? (
+                    <div className="py-12 flex flex-col items-center justify-center text-center space-y-3 opacity-60 italic">
+                        <Terminal className="h-8 w-8 text-[hsl(var(--muted-foreground))]" />
+                        <div className="space-y-1">
+                            <p className="text-sm font-bold">No Editable Fields</p>
+                            <p className="text-xs">All fields for this resource are marked as read-only or hidden.</p>
+                        </div>
                     </div>
                 ) : (
                     visibleFields.map((field) => (

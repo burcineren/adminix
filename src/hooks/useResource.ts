@@ -222,12 +222,21 @@ export function useResource(
   const listQuery = useQuery<PaginatedResponse>({
     queryKey: [resource.name, "list", queryParams],
     queryFn: async (): Promise<PaginatedResponse> => {
+      // 1. Support static / mock data if no endpoint is specified
+      if (!resource.endpoint && resource.data) {
+        return {
+          data: resource.data,
+          total: resource.data.length
+        };
+      }
+
+      // 2. Standard API fetch
       const url = buildUrl(baseUrl, endpoints.list.replace(baseUrl, ""), queryParams);
       const raw = await apiClient.get(url, {}, resource.api);
       return normalizePaginatedResponse(raw, resource.api?.transformResponse);
     },
-    enabled,
-    staleTime,
+    enabled: (enabled && (!!resource.endpoint || !!resource.data)),
+    staleTime: !resource.endpoint && resource.data ? Infinity : staleTime,
     refetchInterval: refetchInterval || undefined,
     placeholderData: (prev) => prev,
   });

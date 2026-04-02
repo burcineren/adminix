@@ -136,6 +136,7 @@ export interface ResourceDefinition {
   filterable?: boolean;
   exportable?: boolean;
   primaryKey?: string;
+  data?: Record<string, unknown>[];
   expandable?: boolean;
   expandedComponent?: ComponentType<{ data: Record<string, unknown> }>;
 }

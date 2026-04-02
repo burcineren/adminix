@@ -49,7 +49,8 @@ const PaginationSchema = z.object({
 
 export const ResourceDefinitionSchema = z.object({
     name: z.string().min(1, "Resource name is required"),
-    endpoint: z.string().min(1, "Endpoint is required"),
+    endpoint: z.string().optional(),
+    data: z.array(z.record(z.string(), z.any())).optional(),
     label: z.string().optional(),
     description: z.string().optional(),
     fields: z.array(FieldDefinitionSchema).optional(),

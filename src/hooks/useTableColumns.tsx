@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
     ArrowUpDown,
     ArrowUp,
@@ -8,6 +8,8 @@ import {
     Trash2,
     ChevronRight,
     ChevronDown,
+    Copy,
+    Check,
 } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ResourceDefinition } from "@/types/resource-types";
@@ -16,7 +18,8 @@ import { Button } from "@/ui/Button";
 import { Dropdown } from "@/ui/Dropdown";
 import { cn } from "@/utils/cn";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
-import { Check } from "lucide-react";
+import { toast } from "sonner";
+import { Switch } from "@/ui/Misc";
 
 // ── Selection Component ────────────────────────────────────────────────────────
 
@@ -48,30 +51,64 @@ function Checkbox({
     );
 }
 
+// ── Copyable Content ──────────────────────────────────────────────────────────
+
+const CopyableContent = ({ children, rawValue }: { children: React.ReactNode; rawValue: string }) => {
+    const [copied, setCopied] = useState(false);
+    const handleCopy = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(rawValue);
+        setCopied(true);
+        toast.success("Copied to clipboard!");
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="group/cell relative flex items-center gap-2 max-w-full">
+            <div className="truncate flex-1" title={rawValue}>{children}</div>
+            <button
+                onClick={handleCopy}
+                className={cn(
+                    "opacity-0 group-hover/cell:opacity-100 p-1 rounded hover:bg-[hsl(var(--muted))] transition-all",
+                    copied && "opacity-100 text-emerald-500"
+                )}
+            >
+                {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3 text-[hsl(var(--muted-foreground))]" />}
+            </button>
+        </div>
+    );
+};
+
 // ── Cell Value Renderer ────────────────────────────────────────────────────────
 
-function renderCellValue(value: unknown, field: UISchemaField): React.ReactNode {
+function renderCellValue(
+    value: unknown, 
+    field: UISchemaField, 
+    row: Record<string, unknown>,
+    pk: string,
+    onInlineUpdate?: (id: unknown, data: Record<string, unknown>) => void
+): React.ReactNode {
     if (value === null || value === undefined) {
         return <span className="text-[hsl(var(--muted-foreground))]">—</span>;
     }
 
-    if (field.format) {
-        return <span className="max-w-[240px] truncate block" title={field.format(value)}>{field.format(value)}</span>;
-    }
+    const content = field.format ? field.format(value) : String(value);
 
     switch (field.type) {
         case "boolean":
             return (
-                <span
-                    className={cn(
-                        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold",
-                        value
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                            : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
-                    )}
-                >
-                    {value ? "Yes" : "No"}
-                </span>
+                <div onClick={(e) => e.stopPropagation()}>
+                    <Switch
+                        checked={!!value}
+                        onCheckedChange={(checked) => {
+                            if (onInlineUpdate) {
+                                onInlineUpdate(row[pk], { [field.name]: checked });
+                                toast.success(`${field.label} updated`);
+                            }
+                        }}
+                        disabled={!onInlineUpdate}
+                    />
+                </div>
             );
         case "enum":
         case "select": {
@@ -97,9 +134,9 @@ function renderCellValue(value: unknown, field: UISchemaField): React.ReactNode 
             return <span className="whitespace-nowrap">{new Date(String(value)).toLocaleDateString()}</span>;
         default:
             return (
-                <span className="max-w-[240px] truncate block" title={String(value)}>
-                    {String(value)}
-                </span>
+                <CopyableContent rawValue={content}>
+                    {content}
+                </CopyableContent>
             );
     }
 }
@@ -113,6 +150,7 @@ interface UseTableColumnsOptions {
     onDelete?: (row: Record<string, unknown>) => void;
     serverSorting?: boolean;
     onSortChange?: (field: string, direction: "asc" | "desc") => void;
+    onInlineUpdate?: (id: unknown, data: Record<string, unknown>) => void;
 }
 
 export function useTableColumns({
@@ -122,8 +160,9 @@ export function useTableColumns({
     onDelete,
     serverSorting,
     onSortChange,
+    onInlineUpdate,
 }: UseTableColumnsOptions) {
-    const permissions = resource.permissions ?? {};
+    const permissions = useMemo(() => resource.permissions ?? {}, [resource.permissions]);
     const visibleFields = useMemo(() => fields.filter((f) => f.showInTable && !f.hidden), [fields]);
 
     return useMemo<ColumnDef<Record<string, unknown>>[]>(() => {
@@ -224,7 +263,13 @@ export function useTableColumns({
                     if (field.render) {
                         return field.render(value, row.original) as React.ReactNode;
                     }
-                    return renderCellValue(value, field);
+                    return renderCellValue(
+                        value, 
+                        field, 
+                        row.original, 
+                        resource.primaryKey ?? "id", 
+                        onInlineUpdate
+                    );
                 },
                 enableSorting: field.sortable !== false,
                 enableHiding: true,
@@ -288,5 +333,5 @@ export function useTableColumns({
         }
 
         return cols;
-    }, [visibleFields, permissions, onEdit, onDelete, resource.rowActions, serverSorting, onSortChange, resource.expandable]);
+    }, [visibleFields, permissions, onEdit, onDelete, resource, serverSorting, onSortChange, onInlineUpdate]);
 }

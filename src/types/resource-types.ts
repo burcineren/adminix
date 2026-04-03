@@ -60,6 +60,7 @@ export interface ResourcePermissions {
   view?: boolean;
   export?: boolean;
   bulkDelete?: boolean;
+  roles?: string[]; // RBAC
 }
 
 // ── Pagination ───────────────────────────────────────────────────────────────
@@ -102,9 +103,12 @@ export interface AdminixPlugin {
   // Extra row actions
   rowActions?: RowAction[];
   // Dashboard widgets
+  dashboardWidget?: ComponentType;
   dashboardWidgets?: ComponentType[];
   // Hook called after every CRUD operation
   onMutation?: (type: "create" | "update" | "delete", data: unknown) => void;
+  // Report extensions
+  reportPlugins?: import("./report-types").ReportPlugin[];
 }
 
 // ── Row Actions ───────────────────────────────────────────────────────────────
@@ -126,6 +130,7 @@ export interface ResourceDefinition {
   description?: string;
   icon?: ComponentType<{ className?: string }>;
   fields?: FieldDefinition[];
+  autoSchema?: boolean; // Killer Feature
   permissions?: ResourcePermissions;
   pagination?: PaginationConfig;
   api?: ApiConfig;
@@ -164,5 +169,10 @@ export interface AdminixProps {
   showDashboard?: boolean;
   dashboardTitle?: string;
   customDashboard?: React.ReactNode;
+  autoSchema?: boolean; // Single-resource mode
+  userRole?: string;
   onError?: (error: unknown) => void;
+  // Reports
+  enableReports?: boolean;
+  initialReports?: import("./report-types").ReportDefinition[];
 }

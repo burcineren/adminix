@@ -1,11 +1,12 @@
 import { Plus, Trash2, GripVertical } from "lucide-react";
-import type { ResourceDefinition, FieldDefinition } from "@/types/resource-types";
+import type { ResourceDefinition, FieldDefinition, FieldType } from "@/types/resource-types";
 import { Input } from "@/ui/Input";
 import { Select } from "@/ui/Select";
 import { Switch, Card } from "@/ui/Misc";
 import { Button } from "@/ui/Button";
 import { INFERRED_TYPES } from "@/core/schema/types";
 import React from "react";
+import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
 
 interface VisualSchemaEditorProps {
     resource: ResourceDefinition;
@@ -17,17 +18,22 @@ const SchemaFieldRow = React.memo(({
     index, 
     handleFieldChange, 
     removeField,
-    typeOptions 
+    typeOptions,
+    dragHandleProps
 }: { 
     field: FieldDefinition; 
     index: number; 
     handleFieldChange: (index: number, updates: Partial<FieldDefinition>) => void;
     removeField: (index: number) => void;
     typeOptions: { label: string; value: string }[];
+    dragHandleProps?: DraggableProvidedDragHandleProps | null;
 }) => (
-    <Card className="p-3 group relative hover:border-[hsl(var(--primary)/0.3)] transition-all overflow-visible">
+    <Card className="p-3 group relative hover:border-[hsl(var(--primary)/0.3)] transition-all overflow-visible bg-[hsl(var(--card))]">
         <div className="flex items-start gap-4">
-            <div className="mt-2 text-[hsl(var(--muted-foreground)/0.5)] cursor-grab">
+            <div 
+                {...dragHandleProps}
+                className="mt-2 text-[hsl(var(--muted-foreground)/0.5)] cursor-grab active:cursor-grabbing hover:text-[hsl(var(--primary))] transition-colors"
+            >
                 <GripVertical className="h-4 w-4" />
             </div>
             <div className="flex-1 grid grid-cols-2 gap-3">
@@ -41,7 +47,7 @@ const SchemaFieldRow = React.memo(({
                     <Select 
                         label="Data Type"
                         value={field.type}
-                        onChange={(val) => handleFieldChange(index, { type: val as any })}
+                        onChange={(val) => handleFieldChange(index, { type: val as FieldType })}
                         options={typeOptions}
                         className="text-xs h-8"
                     />
@@ -85,7 +91,7 @@ const SchemaFieldRow = React.memo(({
 SchemaFieldRow.displayName = "SchemaFieldRow";
 
 export const VisualSchemaEditor = React.memo(({ resource, onChange }: VisualSchemaEditorProps) => {
-    const fields = resource.fields || [];
+    const fields = React.useMemo(() => resource.fields || [], [resource.fields]);
 
     const handleFieldChange = React.useCallback((index: number, updates: Partial<FieldDefinition>) => {
         const newFields = [...fields];
@@ -100,11 +106,21 @@ export const VisualSchemaEditor = React.memo(({ resource, onChange }: VisualSche
             sortable: true
         };
         onChange({ ...resource, fields: [...fields, newField] });
-    }, [fields.length, onChange, resource]);
+    }, [fields, onChange, resource]);
 
     const removeField = React.useCallback((index: number) => {
         const newFields = fields.filter((_, i) => i !== index);
         onChange({ ...resource, fields: newFields });
+    }, [fields, onChange, resource]);
+
+    const onDragEnd = React.useCallback((result: DropResult) => {
+        if (!result.destination) return;
+        
+        const items = [...fields];
+        const [reorderedItem] = items.splice(result.source.index, 1);
+        items.splice(result.destination.index, 0, reorderedItem);
+        
+        onChange({ ...resource, fields: items });
     }, [fields, onChange, resource]);
 
     const typeOptions = React.useMemo(() => 
@@ -149,16 +165,46 @@ export const VisualSchemaEditor = React.memo(({ resource, onChange }: VisualSche
                 </div>
 
                 <div className="space-y-2">
-                    {fields.map((field, index) => (
-                        <SchemaFieldRow 
-                            key={`${field.name}_${index}`}
-                            field={field}
-                            index={index}
-                            handleFieldChange={handleFieldChange}
-                            removeField={removeField}
-                            typeOptions={typeOptions}
-                        />
-                    ))}
+                    <DragDropContext onDragEnd={onDragEnd}>
+                        <Droppable droppableId="schema-fields">
+                            {(provided) => (
+                                <div 
+                                    {...provided.droppableProps}
+                                    ref={provided.innerRef}
+                                    className="space-y-2"
+                                >
+                                    {fields.map((field, index) => (
+                                        <Draggable 
+                                            key={`${field.name}_${index}`} 
+                                            draggableId={field.name || `field-${index}`} 
+                                            index={index}
+                                        >
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    style={{
+                                                        ...provided.draggableProps.style,
+                                                        opacity: snapshot.isDragging ? 0.8 : 1,
+                                                    }}
+                                                >
+                                                    <SchemaFieldRow 
+                                                        field={field}
+                                                        index={index}
+                                                        handleFieldChange={handleFieldChange}
+                                                        removeField={removeField}
+                                                        typeOptions={typeOptions}
+                                                        dragHandleProps={provided.dragHandleProps}
+                                                    />
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
 
                     {fields.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-10 border-2 border-dashed border-[hsl(var(--border))] rounded-xl text-[hsl(var(--muted-foreground))]">

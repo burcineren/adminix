@@ -5,6 +5,7 @@
 
 import type { ComponentType } from "react";
 import type { ZodSchema } from "zod";
+import type { ControllerRenderProps } from "react-hook-form";
 
 // ── Component Names ──────────────────────────────────────────────────────────
 
@@ -146,7 +147,7 @@ export interface UISchemaField {
    * Custom form field render function.
    * If provided, the generic FormGenerator will use this instead of BuiltinComponent.
    */
-  renderForm?: (field: UISchemaField, props: any) => React.ReactNode;
+  renderForm?: (field: UISchemaField, props: ControllerRenderProps<Record<string, unknown>>) => React.ReactNode;
 
   // ── Metadata ────────────────────────────────────────────────────────────────
 
@@ -259,7 +260,7 @@ export interface SchemaFieldOverride {
   customColumn?: unknown;
   validation?: ZodSchema;
   format?: (value: unknown) => string;
-  renderForm?: (field: UISchemaField, props: any) => React.ReactNode;
+  renderForm?: (field: UISchemaField, props: ControllerRenderProps<Record<string, unknown>>) => React.ReactNode;
 }
 
 // ── UI Schema (the complete output) ──────────────────────────────────────────

@@ -67,6 +67,43 @@ export function getSearchableFields(
   return fields.filter((f) => f.searchable !== false && !f.hidden);
 }
 
+export function inferSchemaFromData(
+  data: Record<string, unknown>[]
+): FieldDefinition[] {
+  if (!data || !data.length) return [];
+  const firstRecord = data[0];
+  const fields: FieldDefinition[] = [];
+
+  Object.entries(firstRecord).forEach(([key, value]) => {
+    let type: FieldDefinition["type"] = "text";
+
+    if (typeof value === "number") type = "number";
+    else if (typeof value === "boolean") type = "boolean";
+    else if (
+      typeof value === "string" &&
+      !isNaN(Date.parse(value)) &&
+      value.length > 5
+    )
+      type = "date";
+    else if (Array.isArray(value)) type = "multiselect";
+    else if (typeof value === "object" && value !== null) type = "text"; // Default to text for objects
+
+    fields.push({
+      name: key,
+      label: key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase()),
+      type,
+      sortable: true,
+      filterable: true,
+      searchable: true,
+    });
+  });
+
+  return fields;
+}
+
 export function createResource(
   definition: import("@/types/resource-types").ResourceDefinition
 ) {

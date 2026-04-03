@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import { Plus, Filter, RefreshCw, Download, AlertCircle, Zap } from "lucide-react";
+import { useCallback, useState, useMemo } from "react";
+import { Plus, Filter, RefreshCw, Download, AlertCircle, Zap, LayoutGrid, List as ListIcon, BarChart3 } from "lucide-react";
 import { useResource } from "@/hooks/useResource";
 import { useAdminStore } from "@/core/store";
 import { DataTable } from "@/components/DataTable";
@@ -9,15 +9,20 @@ import { Button } from "@/ui/Button";
 import { Card, EmptyState, LoadingScreen } from "@/ui/Misc";
 import type { ResourceDefinition } from "@/types/resource-types";
 import { cn } from "@/utils/cn";
+import { ReportBuilder } from "./reports/ReportBuilder";
+import { WidgetGrid } from "./reports/WidgetGrid";
+import type { ReportDefinition, ReportWidget } from "@/types/report-types";
 
 interface ResourceViewProps {
     resource: ResourceDefinition;
 }
 
 export function ResourceView({ resource }: ResourceViewProps) {
+    const [viewMode, setViewMode] = useState<"list" | "analytics">("list");
     const [showFilters, setShowFilters] = useState(false);
+    const [isEditingDashboard, setIsEditingDashboard] = useState(false);
 
-    // ── All-in-one resource hook ──────────────────────────────────────────────
+    // ── Store & Resource Hook ──────────────────────────────────────────────────
     const {
         pk,
         label,
@@ -38,12 +43,21 @@ export function ResourceView({ resource }: ResourceViewProps) {
         selectedRows,
         setSelectedRows,
         clearSelectedRows,
+        reports,
+        addReport,
+        updateReport,
+        enableReports
     } = useAdminStore();
 
     const permissions = resource.permissions ?? {};
 
+    // Find if there's a specific report for this resource
+    const resourceReport = useMemo(() => {
+        return reports.find((r: ReportDefinition) => r.id === `resource-report-${resource.name}`);
+    }, [reports, resource.name]);
+
     const handleBulkDelete = useCallback(async () => {
-        const ids = selectedRows.map((r) => r[pk]);
+        const ids = selectedRows.map((r: Record<string, unknown>) => r[pk]);
         await crud.bulkRemove(ids);
         clearSelectedRows();
     }, [crud, selectedRows, pk, clearSelectedRows]);
@@ -52,7 +66,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
         const rows = selectedRows.length > 0 ? selectedRows : list.data;
         if (rows.length === 0) return;
         const headers = schema.fields.map((f) => f.name).join(",");
-        const csvRows = rows.map((row) =>
+        const csvRows = rows.map((row: Record<string, unknown>) =>
             schema.fields
                 .map((f) => {
                     const val = row[f.name];
@@ -71,177 +85,244 @@ export function ResourceView({ resource }: ResourceViewProps) {
         URL.revokeObjectURL(url);
     }, [list.data, selectedRows, schema.fields, resource.name]);
 
+    const handleSaveReport = (report: ReportDefinition) => {
+        if (resourceReport) {
+            updateReport(resourceReport.id, report);
+        } else {
+            addReport({
+                ...report,
+                id: `resource-report-${resource.name}`,
+                _source: "local"
+            });
+        }
+        setIsEditingDashboard(false);
+    };
+
     return (
-        <div className="flex flex-col gap-4 p-6 animate-fade-in text-[hsl(var(--foreground))]">
+        <div className="flex flex-col gap-4 p-6 animate-fade-in text-[hsl(var(--foreground))] min-h-0">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-2xl font-bold tracking-tight">{label}</h1>
-                        {list.isLoading && !isSchemaDetected && (
-                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] text-[10px] font-bold uppercase tracking-wider animate-pulse">
-                                <RefreshCw className="h-3 w-3 animate-spin" />
-                                Analyzing API
-                            </span>
-                        )}
-                    </div>
-                    {resource.description && (
-                        <p className="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
-                            {resource.description}
-                        </p>
-                    )}
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                    {resource.exportable !== false && permissions.export !== false && isSchemaDetected && (
-                        <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 shadow-sm">
-                            <Download className="h-3.5 w-3.5" />
-                            Export
-                        </Button>
-                    )}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => void refetch()}
-                        title="Refresh"
-                        className={cn(list.isFetching && "animate-spin", "h-9 w-9")}
-                    >
-                        <RefreshCw className="h-4 w-4" />
-                    </Button>
-                    {(filters.filterableFields.length > 0 || !isSchemaDetected) && (
-                        <Button
-                            variant={showFilters ? "secondary" : "outline"}
-                            size="sm"
-                            disabled={!isSchemaDetected}
-                            onClick={() => setShowFilters((v) => !v)}
-                            className="gap-1.5 shadow-sm"
-                        >
-                            <Filter className="h-3.5 w-3.5" />
-                            Filters
-                            {filters.hasActiveFilters && (
-                                <span className="ml-0.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] w-4 h-4 flex items-center justify-center text-[10px] leading-none">
-                                    !
-                                </span>
+                    <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] shadow-sm">
+                           {resource.icon ? <resource.icon className="h-5 w-5" /> : <LayoutGrid className="h-5 w-5" />}
+                        </div>
+                        <div>
+                           <h1 className="text-2xl font-black tracking-tight leading-none">{label}</h1>
+                           {resource.description && (
+                                <p className="text-xs font-medium text-[hsl(var(--muted-foreground))] mt-1.5 opacity-70">
+                                    {resource.description}
+                                </p>
                             )}
-                        </Button>
-                    )}
-                    {permissions.create !== false && (
-                        <Button onClick={openCreateModal} className="gap-1.5 shadow-md shadow-[hsl(var(--primary)/0.2)]">
-                            <Plus className="h-4 w-4" />
-                            Create {label}
-                        </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 p-1 bg-[hsl(var(--muted)/0.3)] rounded-xl border border-[hsl(var(--border))]">
+                    <button 
+                        onClick={() => setViewMode("list")}
+                        className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg transition-all",
+                            viewMode === "list" 
+                                ? "bg-[hsl(var(--card))] text-[hsl(var(--primary))] shadow-sm" 
+                                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                        )}
+                    >
+                        <ListIcon className="h-3.5 w-3.5" />
+                        List View
+                    </button>
+                    {enableReports && (
+                        <button 
+                            onClick={() => setViewMode("analytics")}
+                            className={cn(
+                                "flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg transition-all",
+                                viewMode === "analytics" 
+                                    ? "bg-[hsl(var(--card))] text-[hsl(var(--primary))] shadow-sm" 
+                                    : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                            )}
+                        >
+                            <BarChart3 className="h-3.5 w-3.5" />
+                            Analytics
+                        </button>
                     )}
                 </div>
             </div>
 
-            {/* Zero-Config Analysis Placeholder */}
-            {list.isLoading && !isSchemaDetected && (
-                <Card className="flex flex-col items-center justify-center border-2 border-dashed border-[hsl(var(--border))] rounded-xl bg-[hsl(var(--muted)/0.2)]">
-                    <LoadingScreen message="Analyzing API Structure..." />
-                    <div className="pb-8 text-center px-6">
-                        <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                            Adminix is analyzing your API response to infer structure, data types, and UI components.
-                        </p>
+            {viewMode === "list" ? (
+                <>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {resource.searchable !== false && isSchemaDetected && (
+                            <SearchBar
+                                value={filters.searchInput}
+                                onChange={(v) => {
+                                    filters.setSearchInput(v);
+                                }}
+                                placeholder={`Search ${label.toLowerCase()}…`}
+                                className="max-w-sm flex-1"
+                            />
+                        )}
+                        <div className="flex items-center gap-2 ml-auto">
+                            {resource.exportable !== false && permissions.export !== false && isSchemaDetected && (
+                                <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 rounded-xl font-bold">
+                                    <Download className="h-3.5 w-3.5" />
+                                    Export
+                                </Button>
+                            )}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => void refetch()}
+                                title="Refresh"
+                                className={cn(list.isFetching && "animate-spin", "h-9 w-9 rounded-xl")}
+                            >
+                                <RefreshCw className="h-4 w-4" />
+                            </Button>
+                            {(filters.filterableFields.length > 0 || !isSchemaDetected) && (
+                                <Button
+                                    variant={showFilters ? "secondary" : "outline"}
+                                    size="sm"
+                                    disabled={!isSchemaDetected}
+                                    onClick={() => setShowFilters((v) => !v)}
+                                    className="gap-1.5 rounded-xl font-bold"
+                                >
+                                    <Filter className="h-3.5 w-3.5" />
+                                    Filters
+                                </Button>
+                            )}
+                            {permissions.create !== false && (
+                                <Button onClick={openCreateModal} className="gap-1.5 rounded-xl font-black shadow-lg shadow-[hsl(var(--primary)/0.2)]">
+                                    <Plus className="h-4 w-4" />
+                                    Create {label}
+                                </Button>
+                            )}
+                        </div>
                     </div>
-                </Card>
-            )}
 
-            {/* Zero-Config Empty State (No data yet to infer from) */}
-            {list.isSuccess && list.data.length === 0 && !resource.fields?.length && !isSchemaDetected && (
-                <Card className="border-2 border-dashed border-[hsl(var(--border))] rounded-xl bg-[hsl(var(--muted)/0.05)] py-20">
-                    <EmptyState 
-                        title="Waiting for Data"
-                        description={`${label} currently has no records. Adminix needs at least one record to automatically infer the schema and generate the UI.`}
-                        icon={Zap}
-                        action={{
-                            label: "Create First Record",
-                            onClick: openCreateModal,
-                        }}
-                    />
-                    <div className="mt-8 pt-6 border-t border-[hsl(var(--border))/0.5] text-center">
-                        <p className="text-[10px] uppercase font-bold tracking-widest text-[hsl(var(--muted-foreground))] mb-2 opacity-50">Or define manually</p>
-                        <code className="text-[11px] px-3 py-1.5 rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]">
-                            {"{ name: '"} {label.toLowerCase()} {"', endpoint: '"} {resource.endpoint} {"', fields: [...] }"}
-                        </code>
-                    </div>
-                </Card>
-            )}
+                    {showFilters && (
+                        <FilterBar
+                            fields={schema.fields}
+                            filters={filters.filters}
+                            onFilterChange={(name, val) => {
+                                filters.setFilter(name, val as never);
+                            }}
+                            onClear={() => {
+                                filters.clearFilters();
+                            }}
+                            hasActiveFilters={filters.hasActiveFilters}
+                        />
+                    )}
 
-            {/* Search */}
-            {resource.searchable !== false && isSchemaDetected && (
-                <SearchBar
-                    value={filters.searchInput}
-                    onChange={(v) => {
-                        filters.setSearchInput(v);
-                    }}
-                    placeholder={`Search ${label.toLowerCase()}…`}
-                    className="max-w-sm"
-                />
-            )}
-
-            {/* Filters */}
-            {showFilters && (
-                <FilterBar
-                    fields={schema.fields}
-                    filters={filters.filters}
-                    onFilterChange={(name, val) => {
-                        filters.setFilter(name, val as never);
-                    }}
-                    onClear={() => {
-                        filters.clearFilters();
-                    }}
-                    hasActiveFilters={filters.hasActiveFilters}
-                />
-            )}
-
-
-
-            {/* Plugin: table header */}
-            {resource.plugins?.map(
-                (p, i) =>
-                    p.tableHeader && <p.tableHeader key={i} resource={resource} />
-            )}
-
-            {/* Main Content State */}
-            {list.isError ? (
-                <Card className="p-0 border-[hsl(var(--destructive)/0.2)]">
-                    <EmptyState 
-                        title="Failed to load records"
-                        description={list.error?.message || "An error occurred while fetching data from the API."}
-                        icon={AlertCircle}
-                        action={{
-                            label: "Retry Connection",
-                            onClick: () => void refetch(),
-                        }}
-                    />
-                </Card>
+                    {list.isLoading && !isSchemaDetected ? (
+                        <Card className="flex flex-col items-center justify-center border-2 border-dashed border-[hsl(var(--border))] rounded-xl bg-[hsl(var(--muted)/0.2)]">
+                            <LoadingScreen message="Analyzing API Structure..." />
+                        </Card>
+                    ) : list.isSuccess && list.data.length === 0 && !resource.fields?.length && !isSchemaDetected ? (
+                        <Card className="border-2 border-dashed border-[hsl(var(--border))] rounded-xl bg-[hsl(var(--muted)/0.05)] py-20">
+                            <EmptyState 
+                                title="Waiting for Data"
+                                description={`${label} currently has no records. Adminix needs at least one record to automatically infer the schema.`}
+                                icon={Zap}
+                                action={{ label: "Create First Record", onClick: openCreateModal }}
+                            />
+                        </Card>
+                    ) : list.isError ? (
+                        <Card className="p-0 border-[hsl(var(--destructive)/0.2)]">
+                            <EmptyState 
+                                title="Failed to load records"
+                                description={list.error?.message || "An error occurred."}
+                                icon={AlertCircle}
+                                action={{ label: "Retry Connection", onClick: () => void refetch() }}
+                            />
+                        </Card>
+                    ) : (
+                        <Card className="overflow-hidden border-none shadow-xl shadow-[hsl(var(--primary)/0.02)] rounded-3xl">
+                            <DataTable
+                                resource={resource}
+                                fields={schema.fields}
+                                data={list.data}
+                                loading={list.isLoading || list.isFetching}
+                                onEdit={permissions.edit !== false ? openEditModal : undefined}
+                                onDelete={permissions.delete !== false ? openDeleteDialog : undefined}
+                                onRowSelectionChange={setSelectedRows}
+                                serverSorting={resource.pagination?.mode !== "client"}
+                                onSortChange={(field, dir) => { setSort(field, dir); }}
+                                pagination={pagination}
+                                onBulkDelete={handleBulkDelete}
+                                onBulkExport={handleExport}
+                                isBulkDeleting={crud.state.isBulkDeleting}
+                                onInlineUpdate={crud.update}
+                            />
+                        </Card>
+                    )}
+                </>
             ) : (
-                <Card className="overflow-hidden">
-                    <DataTable
-                        resource={resource}
-                        fields={schema.fields}
-                        data={list.data}
-                        loading={list.isLoading || list.isFetching}
-                        onEdit={permissions.edit !== false ? openEditModal : undefined}
-                        onDelete={permissions.delete !== false ? openDeleteDialog : undefined}
-                        onRowSelectionChange={setSelectedRows}
-                        serverSorting={resource.pagination?.mode !== "client"}
-                        onSortChange={(field, dir) => {
-                            setSort(field, dir);
-                        }}
-                        pagination={pagination}
-                        onBulkDelete={handleBulkDelete}
-                        onBulkExport={handleExport}
-                        isBulkDeleting={crud.state.isBulkDeleting}
-                    />
-                </Card>
+                <div className="flex flex-col gap-6">
+                    {isEditingDashboard ? (
+                        <ReportBuilder 
+                            defaultResourceName={resource.name}
+                            initialReport={resourceReport || {
+                                id: `resource-report-${resource.name}`,
+                                name: `${label} Analytics`,
+                                description: `Automatically generated dashboard for ${label}`,
+                                widgets: [],
+                                filters: [],
+                                createdAt: new Date().toISOString(),
+                                updatedAt: new Date().toISOString(),
+                                _source: "local"
+                            }}
+                            onSave={handleSaveReport}
+                            onCancel={() => setIsEditingDashboard(false)}
+                        />
+                    ) : (
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-lg font-black uppercase tracking-widest text-[hsl(var(--muted-foreground))] opacity-60 italic">Dashboard Designer</h2>
+                                <Button onClick={() => setIsEditingDashboard(true)} variant="outline" className="gap-2 rounded-xl font-black">
+                                    <BarChart3 className="h-4 w-4" />
+                                    Configure Charts
+                                </Button>
+                            </div>
+                            {resourceReport && resourceReport.widgets.length > 0 ? (
+                                <WidgetGrid 
+                                    report={resourceReport} 
+                                    onLayoutChange={(newLayout) => {
+                                        const updatedWidgets: ReportWidget[] = resourceReport.widgets.map(w => {
+                                            const layout = (newLayout as unknown as Record<string, unknown>[]).find(l => l.i === w.id);
+                                            if (layout) {
+                                                return { 
+                                                    ...w, 
+                                                    layout: { 
+                                                        x: layout.x as number, 
+                                                        y: layout.y as number, 
+                                                        w: layout.w as number, 
+                                                        h: layout.h as number, 
+                                                        i: layout.i as string 
+                                                    } 
+                                                };
+                                            }
+                                            return w;
+                                        });
+                                        updateReport(resourceReport.id, { widgets: updatedWidgets });
+                                    }}
+                                />
+                            ) : (
+                                <Card className="p-20 flex flex-col items-center border-2 border-dashed border-[hsl(var(--border))] rounded-[40px] bg-[hsl(var(--muted)/0.05)]">
+                                    <div className="h-16 w-16 bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] rounded-full flex items-center justify-center mb-6">
+                                        <BarChart3 className="h-8 w-8" />
+                                    </div>
+                                    <h3 className="text-xl font-black mb-2 uppercase tracking-tight">No Charts Configured</h3>
+                                    <p className="text-sm text-[hsl(var(--muted-foreground))] font-medium text-center max-w-sm mb-8">
+                                        Use the Designer to add interactive charts and visualize your {label.toLowerCase()} data.
+                                    </p>
+                                    <Button onClick={() => setIsEditingDashboard(true)} size="lg" className="rounded-2xl px-10 py-6 font-black shadow-xl shadow-[hsl(var(--primary)/0.2)]">
+                                        Open Dashboard Designer
+                                    </Button>
+                                </Card>
+                            )}
+                        </div>
+                    )}
+                </div>
             )}
-
-            {/* Plugin: table footer */}
-            {resource.plugins?.map(
-                (p, i) =>
-                    p.tableFooter && <p.tableFooter key={i} resource={resource} />
-            )}
-
         </div>
     );
 }

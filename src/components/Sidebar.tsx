@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { cn } from "@/utils/cn";
 import { useAdminStore } from "@/core/store";
 import { useI18n, type Language } from "@/core/i18n";
@@ -5,15 +6,16 @@ import type { ResourceDefinition, AdminixPlugin } from "@/types/resource-types";
 import {
   LayoutDashboard,
   ChevronRight,
-  Moon,
-  Sun,
   Menu,
   X,
   Database,
   ExternalLink,
-  Globe,
+  Search,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/ui/Button";
+import { ThemeToggle } from "@/ui/ThemeToggle";
+import { Input } from "@/ui/Input";
 
 interface SidebarProps {
   resources: ResourceDefinition[];
@@ -29,15 +31,32 @@ export function Sidebar({
   logo,
   plugins,
   showDashboard = true,
-}: SidebarProps) {
+  userRole,
+}: SidebarProps & { userRole?: string }) {
   const {
     activeResource,
     setActiveResource,
-    darkMode,
-    toggleDarkMode,
     sidebarOpen,
     toggleSidebar,
+    enableReports,
   } = useAdminStore();
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredResources = resources
+    .filter((res) => {
+      if (!res.permissions?.roles || res.permissions.roles.length === 0) return true;
+      if (!userRole) return false;
+      return res.permissions.roles.includes(userRole);
+    })
+    .filter((res) => {
+      if (!searchQuery) return true;
+      const lowerQuery = searchQuery.toLowerCase();
+      return (
+        res.name.toLowerCase().includes(lowerQuery) ||
+        (res.label && res.label.toLowerCase().includes(lowerQuery))
+      );
+    });
 
   return (
     <>
@@ -52,7 +71,7 @@ export function Sidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          "z-30 flex h-full flex-col",
+          "z-30 flex h-screen flex-col sticky top-0",
           "border-r border-[hsl(var(--border))] bg-[hsl(var(--card))]",
           "transition-all duration-300 ease-in-out overflow-hidden shrink-0",
           sidebarOpen ? "w-[260px] opacity-100" : "w-0 opacity-0 border-none",
@@ -103,15 +122,50 @@ export function Sidebar({
                 </button>
               </li>
             )}
+            
+            {enableReports && (
+              <li>
+                <button
+                  onClick={() => setActiveResource("reports")}
+                  className={cn(
+                    "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
+                    "transition-all duration-150 text-left",
+                    activeResource === "reports"
+                      ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm"
+                      : "text-[hsl(var(--foreground)/0.7)] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]",
+                  )}
+                >
+                  <BarChart3
+                    className={cn(
+                      "h-4 w-4 shrink-0 transition-transform",
+                      activeResource === "reports" && "scale-110",
+                    )}
+                  />
+                  <span className="truncate flex-1">Reports</span>
+                </button>
+              </li>
+            )}
           </ul>
 
-          <div className="px-3 mt-4 mb-1 border-t border-[hsl(var(--border))] pt-4">
-            <p className="px-2 text-[10px] font-semibold uppercase tracking-widest text-[hsl(var(--muted-foreground))] mb-1">
+          <div className="px-5 mt-6 mb-2">
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] group-focus-within:text-[hsl(var(--primary))] transition-colors" />
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 pl-9 bg-[hsl(var(--muted)/0.3)] border-none focus-visible:ring-1 focus-visible:ring-[hsl(var(--primary)/0.5)] transition-all text-xs"
+              />
+            </div>
+          </div>
+
+          <div className="px-3 mt-4 mb-1">
+            <p className="px-2 text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))] opacity-50 mb-1">
               Resources
             </p>
           </div>
           <ul className="space-y-0.5 px-3">
-            {resources.map((res) => {
+            {filteredResources.map((res) => {
               const isActive = activeResource === res.name;
               const Icon = res.icon ?? Database;
               return (
@@ -159,21 +213,6 @@ export function Sidebar({
 
         {/* Footer */}
         <div className="border-t border-[hsl(var(--border))] p-3 space-y-1">
-          <button
-            onClick={toggleDarkMode}
-            className={cn(
-              "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
-              "text-[hsl(var(--foreground)/0.7)] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]",
-              "transition-colors",
-            )}
-          >
-            {darkMode ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-            {darkMode ? "Light Mode" : "Dark Mode"}
-          </button>
           <a
             href="https://github.com/burcineren/adminix"
             target="_blank"
@@ -228,17 +267,18 @@ export function TopBar({ title }: TopBarProps) {
         </span>
       )}
 
-      <div className="flex items-center gap-1 ml-auto">
-        <Globe className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
-        <div className="flex bg-[hsl(var(--muted)/0.5)] rounded-md p-1">
+      <div className="flex items-center gap-2 ml-auto">
+        <ThemeToggle />
+        <div className="h-4 w-px bg-[hsl(var(--border))] mx-1" />
+        <div className="flex bg-[hsl(var(--muted)/0.5)] rounded-lg p-1 border border-[hsl(var(--border))]">
           {languages.map((lang) => (
             <button
               key={lang.value}
               onClick={() => setLanguage(lang.value)}
               className={cn(
-                "px-2 py-0.5 text-[10px] font-bold rounded transition-colors",
+                "px-2 py-1 text-[10px] font-black tracking-widest rounded-md transition-all duration-200",
                 language === lang.value
-                  ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm"
+                  ? "bg-[hsl(var(--card))] text-[hsl(var(--primary))] shadow-sm"
                   : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]",
               )}
             >

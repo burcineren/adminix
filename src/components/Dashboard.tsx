@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/ui/Misc";
+import { Fragment } from "react";
 import {
     Users,
     ShoppingCart,
@@ -6,7 +7,8 @@ import {
     TrendingUp,
     ArrowUpRight,
     ArrowDownRight,
-    Clock
+    Clock,
+    Database
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 
@@ -52,9 +54,20 @@ function StatCard({ title, value, description, icon: Icon, trend }: StatCardProp
 }
 
 import { useI18n } from "@/core/i18n";
+import { useAdminStore } from "@/core/store";
 
 export function Dashboard() {
     const { t } = useI18n();
+    const { resources, plugins: globalPlugins } = useAdminStore();
+    
+    // Collect all plugins
+    const allPlugins = [
+        ...(globalPlugins ?? []),
+        ...resources.flatMap(r => r.plugins ?? [])
+    ];
+    
+    const dashboardWidgets = allPlugins.filter(p => p.dashboardWidget || (p.dashboardWidgets && p.dashboardWidgets.length > 0));
+
     return (
         <div className="flex flex-col gap-6 p-6 animate-fade-in">
             <div className="flex flex-col gap-1">
@@ -95,7 +108,43 @@ export function Dashboard() {
                 />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-7">
+            <div className="flex flex-col gap-4">
+            <h2 className="text-lg font-bold tracking-tight">Explore Resources</h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {resources.map((res) => {
+                    const Icon = res.icon ?? Database;
+                    return (
+                        <Card 
+                            key={res.name} 
+                            className="group cursor-pointer hover:border-[hsl(var(--primary))] transition-all hover:shadow-lg active:scale-[0.98]"
+                            onClick={() => useAdminStore.getState().setActiveResource(res.name)}
+                        >
+                            <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                                <div className="p-3 rounded-xl bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] group-hover:bg-[hsl(var(--primary))] group-hover:text-white transition-colors">
+                                    <Icon className="h-6 w-6" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <h3 className="font-bold text-lg">{res.label ?? res.name}</h3>
+                                    <p className="text-sm text-[hsl(var(--muted-foreground))] line-clamp-1">
+                                        {res.description ?? `Manage your ${res.name.toLowerCase()} records`}
+                                    </p>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex items-center justify-between pt-4 border-t border-[hsl(var(--border))]">
+                                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+                                    {res.fields?.length ?? 0} fields configured
+                                </span>
+                                <div className="flex items-center gap-1 text-[hsl(var(--primary))] text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                    Open Resource <ArrowUpRight className="h-4 w-4" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-7">
                 <Card className="lg:col-span-4">
                     <CardHeader>
                         <h3 className="text-sm font-semibold">Overview</h3>
@@ -137,6 +186,20 @@ export function Dashboard() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Plugin Dashboard Widgets */}
+            {dashboardWidgets.length > 0 && (
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    {dashboardWidgets.map((p, i) => (
+                        <Fragment key={i}>
+                            {p.dashboardWidget && <p.dashboardWidget />}
+                            {p.dashboardWidgets?.map((Widget, j) => (
+                                <Widget key={j} />
+                            ))}
+                        </Fragment>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

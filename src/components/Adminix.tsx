@@ -1,16 +1,18 @@
-import { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-import { useAdminStore } from "@/core/store";
+import { useAdminStore, type AdminState } from "@/core/store";
 import { useI18n } from "@/core/i18n";
 import { Sidebar, TopBar } from "@/components/Sidebar";
 import { ResourceView } from "@/components/ResourceView";
 import { Dashboard } from "@/components/Dashboard";
+import { ReportsPage } from "@/components/reports/ReportsPage";
 import { GlobalModalManager } from "@/components/GlobalModalManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { validateResourceDefinition } from "@/utils/resource-schema";
 import type { AdminixProps, ResourceDefinition } from "@/types/resource-types";
 import { cn } from "@/utils/cn";
+import { ThemeProvider, useTheme } from "@/core/theme-context";
 import {
   LayoutDashboard,
   Zap,
@@ -34,26 +36,22 @@ const queryClient = new QueryClient({
 
 // ── Composable Components (Puzzle Pieces) ──────────────────────────────────────
 
-/**
- * Root Provider: Manages QueryClient, Store, and Theme.
- * Must wrap all other Adminix components.
- */
 export function AdminixRoot({
   children,
+  defaultDarkMode,
   ...props
 }: AdminixProps & { children: React.ReactNode }) {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AdminixInnerWrapper {...props}>{children}</AdminixInnerWrapper>
+        <ThemeProvider defaultTheme={defaultDarkMode ? "dark" : "light"}>
+          <AdminixInnerWrapper {...props}>{children}</AdminixInnerWrapper>
+        </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );
 }
 
-/**
- * Internal wrapper to sync props to store and provide the base layout shell.
- */
 function AdminixInnerWrapper({
   children,
   resources,
@@ -62,15 +60,22 @@ function AdminixInnerWrapper({
   fields,
   permissions,
   label,
-  defaultDarkMode,
   showDashboard,
+  autoSchema,
+  userRole,
   onError,
+  plugins,
+  enableReports,
+  initialReports,
 }: AdminixProps & { children: React.ReactNode }) {
-  const setResources = useAdminStore((state) => state.setResources);
-  const setDarkMode = useAdminStore((state) => state.setDarkMode);
-  const setActiveResource = useAdminStore((state) => state.setActiveResource);
-  const activeResource = useAdminStore((state) => state.activeResource);
-  const darkMode = useAdminStore((state) => state.darkMode);
+  const setResources = useAdminStore((state: AdminState) => state.setResources);
+  const setActiveResource = useAdminStore((state: AdminState) => state.setActiveResource);
+  const activeResource = useAdminStore((state: AdminState) => state.activeResource);
+  const setEnableReports = useAdminStore((state: AdminState) => state.setEnableReports);
+  const setReports = useAdminStore((state: AdminState) => state.setReports);
+  const existingReports = useAdminStore((state: AdminState) => state.reports);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const normalizedResources = useMemo(() => {
     const list: ResourceDefinition[] = resources ? [...resources] : [];
@@ -81,6 +86,7 @@ function AdminixInnerWrapper({
           name: resourceName,
           endpoint,
           fields: fields ?? [],
+          autoSchema: autoSchema ?? false,
           permissions,
           label:
             label ??
@@ -89,7 +95,7 @@ function AdminixInnerWrapper({
       }
     }
     return list;
-  }, [resources, name, endpoint, fields, permissions, label]);
+  }, [resources, name, endpoint, fields, permissions, label, autoSchema]);
 
   const validationErrors = useMemo(() => {
     const errors: string[] = [];
@@ -104,7 +110,6 @@ function AdminixInnerWrapper({
     return errors;
   }, [normalizedResources]);
 
-  // Validation side-effect
   useEffect(() => {
     if (validationErrors.length > 0 && onError) {
       onError(new Error("Schema Validation Failed"));
@@ -115,13 +120,23 @@ function AdminixInnerWrapper({
     if (validationErrors.length === 0) {
       setResources(normalizedResources);
     }
-    if (defaultDarkMode !== undefined) setDarkMode(defaultDarkMode);
+    if (plugins) useAdminStore.getState().setPlugins(plugins);
+    if (enableReports !== undefined) setEnableReports(enableReports);
+    
+    // Better Practice: Override reports if provided via playground or if store is empty
+    if (initialReports && (existingReports.length === 0 || initialReports.some(r => r._source === 'playground'))) {
+       setReports(initialReports);
+    }
   }, [
     normalizedResources,
-    defaultDarkMode,
     setResources,
-    setDarkMode,
     validationErrors.length,
+    plugins,
+    enableReports,
+    setEnableReports,
+    initialReports,
+    setReports,
+    existingReports.length
   ]);
 
   useEffect(() => {
@@ -145,30 +160,32 @@ function AdminixInnerWrapper({
   ]);
 
   useEffect(() => {
-    if (darkMode) document.documentElement.classList.add("dark");
+    if (isDark) document.documentElement.classList.add("dark");
     else document.documentElement.classList.remove("dark");
-  }, [darkMode]);
+  }, [isDark]);
 
   if (validationErrors.length > 0) {
     return <ValidationErrorScreen errors={validationErrors} />;
   }
 
   return (
-    <div className={cn("adminix-root", darkMode && "dark", "h-full w-full")}>
+    <div className={cn("adminix-root", isDark && "dark", "h-screen w-full overflow-hidden")}>
       <div className="flex h-full w-full overflow-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
         <GlobalModalManager />
-        {children}
+        {React.Children.map(children, (child) => {
+          if (React.isValidElement(child)) {
+            return React.cloneElement(child as React.ReactElement<{ userRole?: string }>, { userRole });
+          }
+          return child;
+        })}
         <Toaster position="bottom-right" richColors />
       </div>
     </div>
   );
 }
 
-/**
- * Default sidebar implementation.
- */
 export function AdminixSidebar(props: Partial<AdminixProps>) {
-  const resources = useAdminStore((s) => s.resources);
+  const resources = useAdminStore((s: AdminState) => s.resources);
   return (
     <Sidebar
       resources={resources}
@@ -176,48 +193,44 @@ export function AdminixSidebar(props: Partial<AdminixProps>) {
       logo={props.logo}
       plugins={props.plugins}
       showDashboard={props.showDashboard}
+      userRole={props.userRole}
     />
   );
 }
 
-/**
- * Main content shell.
- */
 export function AdminixMain({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex-1 flex flex-col min-w-0 relative">{children}</div>
+    <div className="flex-1 flex flex-col min-w-0 relative h-full">{children}</div>
   );
 }
 
-/**
- * Auto-labeling TopBar.
- */
 export function AdminixTopBar() {
-  const { activeResource, resources } = useAdminStore();
+  const { activeResource, resources } = useAdminStore() as AdminState;
   const { t } = useI18n();
-  const current = resources.find((r) => r.name === activeResource);
+  const current = resources.find((r: ResourceDefinition) => r.name === activeResource);
   return (
     <TopBar
       title={
         activeResource === "dashboard"
           ? t.common.dashboard
+          : activeResource === "reports"
+          ? "Reports"
           : (current?.label ?? current?.name)
       }
     />
   );
 }
 
-/**
- * Main content area that switches between dashboard and resource views.
- */
 export function AdminixContent() {
-  const { activeResource, resources } = useAdminStore();
-  const current = resources.find((r) => r.name === activeResource);
+  const { activeResource, resources } = useAdminStore() as AdminState;
+  const current = resources.find((r: ResourceDefinition) => r.name === activeResource);
 
   return (
     <main className="flex-1 overflow-y-auto pt-14">
       {activeResource === "dashboard" ? (
         <Dashboard />
+      ) : activeResource === "reports" ? (
+        <ReportsPage />
       ) : current ? (
         <ResourceView key={current.name} resource={current} />
       ) : (
@@ -227,9 +240,6 @@ export function AdminixContent() {
   );
 }
 
-/**
- * The monolithic Adminix component.
- */
 export const Adminix = Object.assign(
   function Adminix(props: AdminixProps) {
     return (
@@ -250,8 +260,6 @@ export const Adminix = Object.assign(
     Content: AdminixContent,
   },
 );
-
-// ── Fallback Screens ───────────────────────────────────────────────────────────
 
 function ValidationErrorScreen({ errors }: { errors: string[] }) {
   const { t } = useI18n();

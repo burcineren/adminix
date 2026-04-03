@@ -1,4 +1,5 @@
-import { useState, Fragment, memo } from "react";
+import { useState, memo, useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
     useReactTable,
     getCoreRowModel,
@@ -45,6 +46,7 @@ interface DataTableProps {
     onBulkDelete?: () => void;
     onBulkExport?: () => void;
     isBulkDeleting?: boolean;
+    onInlineUpdate?: (id: unknown, data: Record<string, unknown>) => void;
 }
 
 export const DataTable = memo(function DataTable({
@@ -61,6 +63,7 @@ export const DataTable = memo(function DataTable({
     onBulkDelete,
     onBulkExport,
     isBulkDeleting,
+    onInlineUpdate,
 }: DataTableProps) {
     const { language } = useI18n();
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -68,7 +71,7 @@ export const DataTable = memo(function DataTable({
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
     const [expanded, setExpanded] = useState<ExpandedState>({});
     const [density, setDensity] = useState<"compact" | "standard" | "comfortable">("standard");
-
+    const parentRef = useRef<HTMLDivElement>(null);
     const columns = useTableColumns({
         resource,
         fields,
@@ -76,6 +79,7 @@ export const DataTable = memo(function DataTable({
         onDelete,
         serverSorting,
         onSortChange,
+        onInlineUpdate,
     });
 
     const table = useReactTable({
@@ -107,6 +111,13 @@ export const DataTable = memo(function DataTable({
         manualSorting: serverSorting,
         enableRowSelection: resource.permissions?.bulkDelete !== false,
         getRowCanExpand: () => !!resource.expandable,
+    });
+
+    const rowVirtualizer = useVirtualizer({
+        count: table.getRowModel().rows.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => (density === "compact" ? 33 : density === "comfortable" ? 61 : 49),
+        overscan: 10,
     });
 
     const hiddenCount = Object.values(columnVisibility).filter((v) => !v).length;
@@ -182,21 +193,23 @@ export const DataTable = memo(function DataTable({
                 />
             </div>
 
-            {/* Table */}
-            <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                    <thead>
+            {/* Table Area */}
+            <div 
+              ref={parentRef} 
+              className="overflow-auto max-h-[700px] border-t border-[hsl(var(--border))]"
+            >
+                <table className="w-full text-sm border-collapse">
+                    <thead className="sticky top-0 z-20 bg-[hsl(var(--card))] shadow-[0_1px_0_0_hsl(var(--border))]">
                         {table.getHeaderGroups().map((hg) => (
-                            <tr key={hg.id} className="border-b border-[hsl(var(--border))] bg-transparent">
+                            <tr key={hg.id}>
                                 {hg.headers.map((header) => (
                                     <th
                                         key={header.id}
                                         className={cn(
-                                            "sticky top-0 z-10 backdrop-blur-md bg-[hsl(var(--muted)/0.8)]",
-                                            "whitespace-nowrap px-4 text-left text-[hsl(var(--muted-foreground))] font-bold uppercase text-[10px] tracking-widest first:pl-6",
+                                            "whitespace-nowrap px-4 text-left text-[hsl(var(--muted-foreground))] font-bold uppercase text-[10px] tracking-widest first:pl-6 bg-[hsl(var(--card))]",
                                             density === "compact" ? "py-2" : density === "comfortable" ? "py-5" : "py-4"
                                         )}
-                                        style={{ width: header.getSize() }}
+                                        style={{ width: header.getSize(), minWidth: header.getSize() }}
                                     >
                                         {header.isPlaceholder
                                             ? null
@@ -208,76 +221,71 @@ export const DataTable = memo(function DataTable({
                     </thead>
                     <tbody>
                         {loading ? (
-                            Array.from({ length: 6 }).map((_, i) => (
+                            Array.from({ length: 5 }).map((_, i) => (
                                 <tr key={i} className="border-b border-[hsl(var(--border))]">
-                                    {(columns.length > 2 ? columns : Array.from({ length: 5 })).map((_, j) => (
+                                    {columns.map((_, j) => (
                                         <td key={j} className="px-4 py-3">
                                             <Skeleton className="h-4 w-full" />
                                         </td>
                                     ))}
                                 </tr>
                             ))
-                        ) : table.getRowModel().rows.length === 0 ? (
+                        ) : (
+                            <>
+                                {rowVirtualizer.getVirtualItems().length > 0 && rowVirtualizer.getVirtualItems()[0].start > 0 && (
+                                    <tr>
+                                        <td style={{ height: `${rowVirtualizer.getVirtualItems()[0].start}px` }} colSpan={columns.length} />
+                                    </tr>
+                                )}
+                                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                                    const row = table.getRowModel().rows[virtualRow.index];
+                                    if (!row) return null;
+                                    
+                                    return (
+                                        <tr
+                                            key={row.id}
+                                            data-selected={row.getIsSelected()}
+                                            className={cn(
+                                                "border-b border-[hsl(var(--border))] transition-colors group",
+                                                "hover:bg-[hsl(var(--muted)/0.4)]",
+                                                row.getIsSelected() && "bg-[hsl(var(--primary)/2%)]"
+                                            )}
+                                        >
+                                            {row.getVisibleCells().map((cell) => (
+                                                <td 
+                                                    key={cell.id} 
+                                                    className={cn(
+                                                        "px-4 text-sm first:pl-6 truncate",
+                                                        density === "compact" ? "py-1.5" : density === "comfortable" ? "py-4.5" : "py-3"
+                                                    )}
+                                                    style={{ width: cell.column.getSize(), minWidth: cell.column.getSize() }}
+                                                >
+                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    );
+                                })}
+                                {rowVirtualizer.getVirtualItems().length > 0 && (
+                                    rowVirtualizer.getTotalSize() - rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end > 0 && (
+                                        <tr>
+                                            <td style={{ height: `${rowVirtualizer.getTotalSize() - rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end}px` }} colSpan={columns.length} />
+                                        </tr>
+                                    )
+                                )}
+                            </>
+                        )}
+                        {!loading && table.getRowModel().rows.length === 0 && (
                             <tr>
-                                <td
-                                    colSpan={columns.length}
-                                    className="py-12"
-                                >
+                                <td colSpan={columns.length} className="py-12">
                                     <EmptyState 
                                         title={language === 'tr' ? 'Kayıt bulunamadı' : 'No records found'}
                                         description={language === 'tr' 
-                                            ? 'Mevcut görünüme uygun veri bulamadık. Filtreleri veya arama terimlerini değiştirmeyi deneyin.' 
-                                            : "We couldn't find any data matching your current view. Try adjusting your filters or search terms."}
+                                            ? 'Mevcut görünüme uygun veri bulamadık.' 
+                                            : "We couldn't find any data matching your current view."}
                                     />
                                 </td>
                             </tr>
-                        ) : (
-                            table.getRowModel().rows.map((row) => (
-                                <Fragment key={row.id}>
-                                    <tr
-                                        data-selected={row.getIsSelected()}
-                                        className={cn(
-                                            "border-b border-[hsl(var(--border))] transition-colors",
-                                            "hover:bg-[hsl(var(--muted)/0.4)]",
-                                            row.getIsSelected() && "bg-[hsl(var(--primary)/2%)]"
-                                        )}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <td 
-                                                key={cell.id} 
-                                                className={cn(
-                                                    "px-4 text-sm transition-all first:pl-6",
-                                                    density === "compact" ? "py-1.5" : density === "comfortable" ? "py-5" : "py-3.5"
-                                                )}
-                                            >
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                    {row.getIsExpanded() && (
-                                        <tr className="bg-[hsl(var(--muted)/0.2)]">
-                                            <td colSpan={columns.length} className="px-4 py-6">
-                                                {resource.expandedComponent ? (
-                                                    <resource.expandedComponent data={row.original} />
-                                                ) : (
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-slide-in">
-                                                        {fields.map((f) => (
-                                                            <div key={f.name}>
-                                                                <p className="text-[10px] uppercase tracking-wider font-bold text-[hsl(var(--muted-foreground))] mb-1">
-                                                                    {f.label}
-                                                                </p>
-                                                                <div className="text-sm text-[hsl(var(--foreground))]">
-                                                                    {row.getValue(f.name) !== undefined ? String(row.getValue(f.name)) : <span className="opacity-30">—</span>}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )}
-                                </Fragment>
-                            ))
                         )}
                     </tbody>
                 </table>

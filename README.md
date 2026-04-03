@@ -1,29 +1,29 @@
 # 🚀 Adminix
 
-> **Build a full Admin Panel from your API in 30 seconds.**
+> **Build a full Admin Panel & Analytics Dashboard from your API in 30 seconds.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://typescriptlang.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
 
-Adminix is a zero-config React library that generates production-ready management dashboards from your REST API instantly. Point to any endpoint, and it auto-detects fields, types, and labels to render a full-featured CRUD interface.
+Adminix is a zero-config React library that generates production-ready management dashboards and interactive analytics from your REST API instantly. Point to any endpoint, and it auto-detects fields, types, and labels to render a full-featured CRUD interface with integrated data visualization.
 
 ## 📺 Live Demo
-![AutoAdmin Demo](https://raw.githubusercontent.com/google/autoadmin/main/docs/demo.gif)
-*(GIF Demo: Zero-Config inference and live schema editing in action)*
+![Adminix Demo](https://raw.githubusercontent.com/burcineren/adminix/main/docs/demo.gif)
+*(Zero-Config inference, Live Schema Editing, and Dashboard Designer in action)*
 
 ---
 
 ## ✨ Features
 
-- **Zero Config** — Point to any REST endpoint. AutoAdmin infers the schema and renders a full CRUD interface.
+- **Zero Config** — Point to any REST endpoint. Adminix infers the schema and renders a full CRUD interface.
+- **Reporting & Analytics** — Built-in dashboard system with Line, Bar, Pie, Area charts and KPI widgets.
+- **Dashboard Designer** — Drag-and-drop interface for users and developers to build custom analytics views.
+- **Resource Analytics** — Every resource automatically gets an "Analytics" tab for context-specific data visualization.
 - **Schema Driven** — Define fields with types, validation, and custom renderers. Full TypeScript autocomplete.
-- **Plugin System** — Extend the UI with custom widgets, field types, and mutation hooks. Fully composable.
+- **Plugin System** — Extend the UI with custom widgets, field types, and mutation hooks.
 - **Export to ZIP** — Generate a clean, production-ready React project from any schema.
-- **Interactive Playground** — Edit schemas in real-time with Zod validation and live preview.
-- **Dark Mode** — Beautiful, consistent theming with automatic dark mode via CSS variables.
-- **Permissions** — Control create, edit, delete, and export per resource with a simple config.
-- **i18n Ready** — Built-in internationalization support.
+- **Dark Mode** — Beautiful, consistent theming with automatic dark mode support.
 
 ---
 
@@ -40,53 +40,54 @@ npm install adminix
 ### Zero-Config Mode
 
 ```tsx
-import { AdminPanel } from 'adminix';
-import 'adminix/style.css'; // Don't forget this!
+import { Adminix } from 'adminix';
+import 'adminix/style.css'; // Don't forget the styles!
 
 export default function App() {
-  return <AdminPanel endpoint="/api/products" />;
+  return <Adminix endpoint="/api/products" />;
 }
 ```
 
-### Schema-Driven Mode
+### Analytics & Reporting Mode
+
+Enable the built-in reporting engine with a single prop. This adds a global "Reports" section and an "Analytics" tab to each of your resources.
 
 ```tsx
-import { AdminPanel } from 'adminix';
-import 'adminix/style.css';
+import { Adminix } from 'adminix';
 
 const resources = [
   {
-    name: 'users',
-    endpoint: '/api/users',
-    label: 'User Directory',
+    name: 'sales',
+    endpoint: '/api/analytics/sales',
+    label: 'Global Sales',
     fields: [
-      { name: 'id', type: 'number', sortable: true },
-      { name: 'name', type: 'string', required: true, searchable: true },
-      { name: 'email', type: 'string', required: true },
-      { name: 'role', type: 'select', filter: 'select', options: [
-        { label: 'Admin', value: 'admin' },
-        { label: 'Editor', value: 'editor' },
-      ]},
-      { name: 'active', type: 'boolean', filter: 'boolean' },
-    ],
-    permissions: { create: true, edit: true, delete: true },
-  },
+      { name: 'date', type: 'string', sortable: true },
+      { name: 'amount', type: 'number', sortable: true },
+      { name: 'region', type: 'select', options: [...] }
+    ]
+  }
 ];
 
 export default function App() {
-  return <AdminPanel resources={resources} title="My Admin" />;
+  return (
+    <Adminix 
+      resources={resources} 
+      enableReports={true} 
+      title="Adminix Analytics" 
+    />
+  );
 }
 ```
 
-### Multi-Resource Mode
+---
 
-```tsx
-<AdminPanel
-  resources={[usersResource, productsResource, ordersResource]}
-  title="Corporate Admin"
-  defaultDarkMode={true}
-/>
-```
+## 📊 Dashboard Designer
+
+Adminix includes a powerful **Dashboard Designer** that allows you to:
+- Create global dashboards for cross-resource overview.
+- Add resource-specific charts directly from the resource's "Analytics" tab.
+- Choose from multiple chart types: **Line, Bar, Area, Pie, KPI, and Table**.
+- Use the **Drag-and-Drop** grid to organize your layout.
 
 ---
 
@@ -95,7 +96,7 @@ export default function App() {
 ```tsx
 import { chartsPlugin, analyticsPlugin } from 'adminix/plugins';
 
-<AdminPanel
+<Adminix
   resources={resources}
   plugins={[chartsPlugin(), analyticsPlugin()]}
 />
@@ -103,49 +104,28 @@ import { chartsPlugin, analyticsPlugin } from 'adminix/plugins';
 
 ---
 
-## 📖 Documentation
-
-View the full documentation by running the dev server:
-
-```bash
-npm run dev
-```
-
-Then click the **Documentation** tab in the navigation bar.
-
----
-
-## 🛠 Development
-
-```bash
-git clone https://github.com/burcineren/zero-admin.git
-cd zero-admin
-npm install
-npm run dev
-```
-
-### Build the library
-
-```bash
-npm run build
-```
-
----
-
-## 📁 Project Structure
+## 📖 Project Structure
 
 ```
 src/
-├── components/      # UI components (AdminPanel, DataTable, etc.)
-├── core/            # Store, i18n, schema engine
-│   └── schema/      # Inferrer, parser, mapper, plugins
-├── hooks/           # React hooks (useResource, useCrudActions, etc.)
-├── plugins/         # Example plugins (charts, analytics, badges)
-├── types/           # TypeScript type definitions
-├── ui/              # Primitive UI components (Button, Modal, etc.)
-├── utils/           # Utilities (code-generator, zip-exporter, etc.)
-├── demo/            # Demo application (DemoRunner, LandingPage, etc.)
+├── components/      # UI components (Adminix, DataTable, Reports, etc.)
+├── core/            # Store, i18n, schema engine, theme context
+├── hooks/           # React hooks (useResource, useFilters, etc.)
+├── plugins/         # Extensibility system and builtin plugins
+├── types/           # TypeScript type definitions (Report types, Resource types)
+├── ui/              # Primitive UI components (Button, Card, Dropdown, etc.)
 └── index.ts         # Public API exports
+```
+
+---
+
+## 🛠 Geliştirme (Development)
+
+```bash
+git clone https://github.com/burcineren/adminix.git
+cd adminix
+npm install
+npm run dev
 ```
 
 ---
@@ -158,4 +138,4 @@ MIT — see [LICENSE](./LICENSE) for details.
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and guidelines.
+Contributions are welcome! Please check the issues page or open a PR. (Created with ❤️ by Burçin Eren)

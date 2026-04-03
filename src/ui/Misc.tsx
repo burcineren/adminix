@@ -1,6 +1,26 @@
 import * as React from "react";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
-import { Loader2, Inbox, RefreshCw } from "lucide-react";
+import { Inbox, LayoutDashboard } from "lucide-react";
+
+export function LoadingScreen({ message = "Loading..." }: { message?: string }) {
+    return (
+        <div className="flex h-full min-h-[400px] w-full flex-col items-center justify-center gap-6 bg-[hsl(var(--background)/0.3)] backdrop-blur-md animate-fade-in">
+            <div className="relative flex items-center justify-center">
+                <div className="absolute h-16 w-16 rounded-full border-4 border-[hsl(var(--primary)/0.1)] border-t-[hsl(var(--primary))] animate-spin" />
+                <div className="absolute h-10 w-10 border-4 border-dashed border-[hsl(var(--primary)/0.3)] rounded-full animate-spin [animation-duration:3s]" />
+                <LayoutDashboard className="h-5 w-5 text-[hsl(var(--primary))] animate-pulse" />
+            </div>
+            <div className="flex flex-col items-center gap-2">
+                <p className="text-[10px] font-black tracking-[0.3em] uppercase text-[hsl(var(--muted-foreground))] opacity-80 animate-pulse">
+                    {message}
+                </p>
+                <div className="h-0.5 w-24 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                    <div className="h-full bg-linear-to-r from-transparent via-[hsl(var(--primary))] to-transparent w-full animate-shimmer scale-x-50" />
+                </div>
+            </div>
+        </div>
+    );
+}
 import { cn } from "@/utils/cn";
 import { Button } from "./Button";
 
@@ -77,13 +97,7 @@ export function Badge({ children, variant = "default", className }: BadgeProps) 
     );
 }
 
-// Card
-interface CardProps {
-    children: React.ReactNode;
-    className?: string;
-}
-
-export function Card({ children, className }: CardProps) {
+export function Card({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
     return (
         <div
             className={cn(
@@ -91,22 +105,23 @@ export function Card({ children, className }: CardProps) {
                 "shadow-sm",
                 className
             )}
+            {...props}
         >
             {children}
         </div>
     );
 }
 
-export function CardHeader({ children, className }: CardProps) {
+export function CardHeader({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
     return (
-        <div className={cn("flex flex-col space-y-1.5 p-5 pb-3", className)}>
+        <div className={cn("flex flex-col space-y-1.5 p-5 pb-3", className)} {...props}>
             {children}
         </div>
     );
 }
 
-export function CardContent({ children, className }: CardProps) {
-    return <div className={cn("p-5 pt-0", className)}>{children}</div>;
+export function CardContent({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+    return <div className={cn("p-5 pt-0", className)} {...props}>{children}</div>;
 }
 
 export function Skeleton({ className }: { className?: string }) {
@@ -122,20 +137,6 @@ export function Separator({ className }: { className?: string }) {
 }
 
 // ── New Production Components ────────────────────────────────────────────────
-
-export function LoadingScreen({ message = "Loading..." }: { message?: string }) {
-    return (
-        <div className="flex h-full min-h-[400px] w-full flex-col items-center justify-center gap-4 bg-[hsl(var(--background)/0.5)] backdrop-blur-sm animate-fade-in">
-            <div className="relative flex items-center justify-center">
-                <Loader2 className="h-10 w-10 animate-spin text-[hsl(var(--primary))] opacity-20" />
-                <RefreshCw className="absolute h-5 w-5 animate-spin text-[hsl(var(--primary))]" style={{ animationDirection: 'reverse', animationDuration: '3s' }} />
-            </div>
-            <p className="text-sm font-bold tracking-widest uppercase text-[hsl(var(--muted-foreground))] animate-pulse">
-                {message}
-            </p>
-        </div>
-    );
-}
 
 export function EmptyState({ 
     title = "No results found", 

@@ -1,10 +1,11 @@
 import { create } from "zustand";
-import type { ResourceDefinition } from "@/types/resource-types";
+import type { ResourceDefinition, AdminixPlugin } from "@/types/resource-types";
+import type { ReportDefinition } from "@/types/report-types";
 
 export interface AdminState {
   // Active resource
   activeResource: string | null;
-  setActiveResource: (name: string) => void;
+  setActiveResource: (name: string | null) => void;
 
   // Dark mode
   darkMode: boolean;
@@ -19,6 +20,10 @@ export interface AdminState {
   // Resources registry
   resources: ResourceDefinition[];
   setResources: (resources: ResourceDefinition[]) => void;
+  
+  // Plugins
+  plugins: AdminixPlugin[];
+  setPlugins: (plugins: AdminixPlugin[]) => void;
 
   // Modals
   createModalOpen: boolean;
@@ -38,34 +43,47 @@ export interface AdminState {
   selectedRows: Record<string, unknown>[];
   setSelectedRows: (rows: Record<string, unknown>[]) => void;
   clearSelectedRows: () => void;
+  
+  // Reports
+  reports: ReportDefinition[];
+  setReports: (reports: ReportDefinition[]) => void;
+  addReport: (report: ReportDefinition) => void;
+  updateReport: (id: string, report: Partial<ReportDefinition>) => void;
+  removeReport: (id: string) => void;
+  enableReports: boolean;
+  setEnableReports: (enabled: boolean) => void;
 }
 
 export const useAdminStore = create<AdminState>((set) => ({
   activeResource: typeof window !== "undefined" ? localStorage.getItem("adminix_active_resource") : null,
-  setActiveResource: (name) => {
-    localStorage.setItem("adminix_active_resource", name || "");
+  setActiveResource: (name: string | null) => {
+    if (name) localStorage.setItem("adminix_active_resource", name);
+    else localStorage.removeItem("adminix_active_resource");
     set({ activeResource: name });
   },
 
   darkMode: typeof window !== "undefined" 
     ? (localStorage.getItem("adminix_dark_mode") === "true" || (!localStorage.getItem("adminix_dark_mode") && (window.matchMedia("(prefers-color-scheme: dark)").matches || true)))
     : true,
-  toggleDarkMode: () => set((s) => {
+  toggleDarkMode: () => set((s: AdminState) => {
     const newVal = !s.darkMode;
     localStorage.setItem("adminix_dark_mode", String(newVal));
     return { darkMode: newVal };
   }),
-  setDarkMode: (value) => {
+  setDarkMode: (value: boolean) => {
     localStorage.setItem("adminix_dark_mode", String(value));
     set({ darkMode: value });
   },
 
   sidebarOpen: true,
-  setSidebarOpen: (open) => set({ sidebarOpen: open }),
-  toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
+  toggleSidebar: () => set((s: AdminState) => ({ sidebarOpen: !s.sidebarOpen })),
 
   resources: [],
-  setResources: (resources) => set({ resources }),
+  setResources: (resources: ResourceDefinition[]) => set({ resources }),
+
+  plugins: [],
+  setPlugins: (plugins: AdminixPlugin[]) => set({ plugins }),
 
   createModalOpen: false,
   editModalOpen: false,
@@ -75,12 +93,38 @@ export const useAdminStore = create<AdminState>((set) => ({
 
   openCreateModal: () => set({ createModalOpen: true }),
   closeCreateModal: () => set({ createModalOpen: false }),
-  openEditModal: (row) => set({ editModalOpen: true, editingRow: row }),
+  openEditModal: (row: Record<string, unknown>) => set({ editModalOpen: true, editingRow: row }),
   closeEditModal: () => set({ editModalOpen: false, editingRow: null }),
-  openDeleteDialog: (row) => set({ deleteDialogOpen: true, deletingRow: row }),
+  openDeleteDialog: (row: Record<string, unknown>) => set({ deleteDialogOpen: true, deletingRow: row }),
   closeDeleteDialog: () => set({ deleteDialogOpen: false, deletingRow: null }),
 
   selectedRows: [],
-  setSelectedRows: (rows) => set({ selectedRows: rows }),
+  setSelectedRows: (rows: Record<string, unknown>[]) => set({ selectedRows: rows }),
   clearSelectedRows: () => set({ selectedRows: [] }),
+
+  // Reports
+  reports: typeof window !== "undefined" 
+    ? JSON.parse(localStorage.getItem("adminix_reports") || "[]")
+    : [],
+  setReports: (reports: ReportDefinition[]) => {
+    localStorage.setItem("adminix_reports", JSON.stringify(reports));
+    set({ reports });
+  },
+  addReport: (report: ReportDefinition) => set((s: AdminState) => {
+    const newReports = [...s.reports, report];
+    localStorage.setItem("adminix_reports", JSON.stringify(newReports));
+    return { reports: newReports };
+  }),
+  updateReport: (id: string, report: Partial<ReportDefinition>) => set((s: AdminState) => {
+    const newReports = s.reports.map((r: ReportDefinition) => r.id === id ? { ...r, ...report, updatedAt: new Date().toISOString() } : r);
+    localStorage.setItem("adminix_reports", JSON.stringify(newReports));
+    return { reports: newReports };
+  }),
+  removeReport: (id: string) => set((s: AdminState) => {
+    const newReports = s.reports.filter((r: ReportDefinition) => r.id !== id);
+    localStorage.setItem("adminix_reports", JSON.stringify(newReports));
+    return { reports: newReports };
+  }),
+  enableReports: false,
+  setEnableReports: (enabled: boolean) => set({ enableReports: enabled }),
 }));

@@ -183,7 +183,7 @@ export function DevPlayground() {
           </div>
         </div>
 
-        <div className="flex-1 relative overflow-hidden">
+        <div className="flex-1 relative overflow-hidden flex flex-col">
           {editMode === "visual" ? (
             <VisualSchemaEditor resource={resource} onChange={handleVisualChange} />
           ) : (

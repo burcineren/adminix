@@ -1,4 +1,4 @@
-import { useState, memo, useRef } from "react";
+import { useState, memo, useRef, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
     useReactTable,
@@ -88,19 +88,7 @@ export const DataTable = memo(function DataTable({
         state: { sorting, columnVisibility, rowSelection, expanded },
         onSortingChange: setSorting,
         onColumnVisibilityChange: setColumnVisibility,
-        onRowSelectionChange: (updater) => {
-            setRowSelection((prev) => {
-                const next = typeof updater === "function" ? updater(prev) : updater;
-                if (onRowSelectionChange) {
-                    const selectedData = Object.keys(next)
-                        .filter((k) => next[k])
-                        .map((k) => data[parseInt(k)])
-                        .filter(Boolean);
-                    onRowSelectionChange(selectedData);
-                }
-                return next;
-            });
-        },
+        onRowSelectionChange: setRowSelection,
         onExpandedChange: setExpanded,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
@@ -112,6 +100,14 @@ export const DataTable = memo(function DataTable({
         enableRowSelection: resource.permissions?.bulkDelete !== false,
         getRowCanExpand: () => !!resource.expandable,
     });
+
+    // Sync selection with parent
+    useEffect(() => {
+        if (onRowSelectionChange) {
+            const selectedData = table.getSelectedRowModel().flatRows.map((r) => r.original);
+            onRowSelectionChange(selectedData);
+        }
+    }, [rowSelection, onRowSelectionChange, table]);
 
     const rowVirtualizer = useVirtualizer({
         count: table.getRowModel().rows.length,

@@ -122,10 +122,10 @@ function AdminixInnerWrapper({
     }
     if (plugins) useAdminStore.getState().setPlugins(plugins);
     if (enableReports !== undefined) setEnableReports(enableReports);
-    
+
     // Better Practice: Override reports if provided via playground or if store is empty
     if (initialReports && (existingReports.length === 0 || initialReports.some(r => r._source === 'playground'))) {
-       setReports(initialReports);
+      setReports(initialReports);
     }
   }, [
     normalizedResources,
@@ -214,8 +214,8 @@ export function AdminixTopBar() {
         activeResource === "dashboard"
           ? t.common.dashboard
           : activeResource === "reports"
-          ? "Reports"
-          : (current?.label ?? current?.name)
+            ? "Reports"
+            : (current?.label ?? current?.name)
       }
     />
   );

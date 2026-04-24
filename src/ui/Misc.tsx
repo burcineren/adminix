@@ -138,13 +138,13 @@ export function Separator({ className }: { className?: string }) {
 
 // ── New Production Components ────────────────────────────────────────────────
 
-export function EmptyState({ 
-    title = "No results found", 
+export function EmptyState({
+    title = "No results found",
     description = "Try adjusting your filters or search term.",
     icon: Icon = Inbox,
     action,
     className
-}: { 
+}: {
     title?: string;
     description?: string;
     icon?: React.ComponentType<{ className?: string }>;

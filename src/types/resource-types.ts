@@ -15,6 +15,7 @@ export interface SelectOption {
 }
 
 export interface FieldDefinition {
+  id?: string;
   name: string;
   label?: string;
   type: FieldType;

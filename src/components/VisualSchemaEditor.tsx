@@ -1,4 +1,18 @@
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { 
+    Plus, 
+    Trash2, 
+    GripVertical, 
+    Type, 
+    Hash, 
+    CheckSquare, 
+    Calendar, 
+    Mail, 
+    Link, 
+    Image as ImageIcon, 
+    ListFilter, 
+    Braces, 
+    HelpCircle 
+} from "lucide-react";
 import type { ResourceDefinition, FieldDefinition, FieldType } from "@/types/resource-types";
 import { Input } from "@/ui/Input";
 import { Select } from "@/ui/Select";
@@ -28,7 +42,7 @@ const SchemaFieldRow = React.memo(({
     typeOptions: { label: string; value: string }[];
     dragHandleProps?: DraggableProvidedDragHandleProps | null;
 }) => (
-    <Card className="p-3 group relative hover:border-[hsl(var(--primary)/0.3)] transition-all overflow-visible bg-[hsl(var(--card))]">
+    <Card className="p-2.5 group relative hover:border-[hsl(var(--primary)/0.3)] transition-all overflow-visible bg-[hsl(var(--card))]">
         <div className="flex items-start gap-4">
             <div 
                 {...dragHandleProps}
@@ -91,21 +105,39 @@ const SchemaFieldRow = React.memo(({
 SchemaFieldRow.displayName = "SchemaFieldRow";
 
 export const VisualSchemaEditor = React.memo(({ resource, onChange }: VisualSchemaEditorProps) => {
-    const fields = React.useMemo(() => resource.fields || [], [resource.fields]);
+    const fields = React.useMemo(() => {
+        const baseFields = resource.fields || [];
+        // Ensure every field has a stable ID for DND
+        return baseFields.map((f, i) => ({
+            ...f,
+            id: f.id || `stable-${f.name}-${i}`
+        }));
+    }, [resource.fields]);
 
     const handleFieldChange = React.useCallback((index: number, updates: Partial<FieldDefinition>) => {
         const newFields = [...fields];
         newFields[index] = { ...newFields[index], ...updates };
+        // We strip the temporary IDs before saving if they were generated here, 
+        // or just keep them if they are part of the spec.
         onChange({ ...resource, fields: newFields });
     }, [fields, onChange, resource]);
 
     const addField = React.useCallback(() => {
+        const count = fields.length + 1;
+        let newName = `field_${count}`;
+        
+        // Ensure name uniqueness
+        while (fields.some(f => f.name === newName)) {
+            newName = `field_${Math.floor(Math.random() * 10000)}`;
+        }
+
         const newField: FieldDefinition = {
-            name: `field_${fields.length + 1}`,
+            id: crypto.randomUUID(),
+            name: newName,
             type: "string",
             sortable: true
         };
-        onChange({ ...resource, fields: [...fields, newField] });
+        onChange({ ...resource, fields: [newField, ...fields] });
     }, [fields, onChange, resource]);
 
     const removeField = React.useCallback((index: number) => {
@@ -123,10 +155,28 @@ export const VisualSchemaEditor = React.memo(({ resource, onChange }: VisualSche
         onChange({ ...resource, fields: items });
     }, [fields, onChange, resource]);
 
-    const typeOptions = React.useMemo(() => 
-        INFERRED_TYPES.map(t => ({ label: t.toUpperCase(), value: t })),
-        []
-    );
+    const typeOptions = React.useMemo(() => {
+        const TYPE_ICONS: Record<string, any> = {
+            string: Type,
+            number: Hash,
+            boolean: CheckSquare,
+            date: Calendar,
+            datetime: Calendar,
+            email: Mail,
+            url: Link,
+            "image-url": ImageIcon,
+            select: ListFilter,
+            multiselect: ListFilter,
+            json: Braces,
+            unknown: HelpCircle,
+        };
+
+        return INFERRED_TYPES.map(t => ({ 
+            label: t.charAt(0).toUpperCase() + t.slice(1).replace("-", " "), 
+            value: t,
+            icon: TYPE_ICONS[t] || HelpCircle
+        }));
+    }, []);
 
     return (
         <div className="flex-1 overflow-y-auto p-4 space-y-6 animate-fade-in">
@@ -175,8 +225,8 @@ export const VisualSchemaEditor = React.memo(({ resource, onChange }: VisualSche
                                 >
                                     {fields.map((field, index) => (
                                         <Draggable 
-                                            key={`${field.name}_${index}`} 
-                                            draggableId={field.name || `field-${index}`} 
+                                            key={field.id} 
+                                            draggableId={field.id!} 
                                             index={index}
                                         >
                                             {(provided, snapshot) => (

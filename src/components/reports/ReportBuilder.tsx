@@ -60,9 +60,9 @@ export function ReportBuilder({ initialReport, onSave, onCancel, defaultResource
         resourceName: defaultResourceName || resources[0]?.name || "",
       },
       config: {
-        xAxisField: "id",
-        yAxisField: "",
-        seriesFields: [],
+        xAxisField: "name",
+        valueField: "price",
+        seriesFields: ["price"],
         showGrid: true,
         showLegend: true,
       },
@@ -298,19 +298,20 @@ export function ReportBuilder({ initialReport, onSave, onCancel, defaultResource
                        </div>
                        <div className="space-y-2">
                           <label className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--muted-foreground))] pl-1">
-                            {activeWidget.type === "pie" ? "Value Field" : "Series Fields"}
+                            Value Field (Y-Axis)
                           </label>
                           <Input 
-                            value={activeWidget.type === "pie" ? activeWidget.config.valueField : activeWidget.config.seriesFields?.join(", ")} 
+                            value={activeWidget.type === "pie" ? activeWidget.config.valueField : activeWidget.config.seriesFields?.[0] || ""} 
                             onChange={(e) => {
+                              const val = e.target.value;
                               if (activeWidget.type === "pie") {
-                                updateWidget(activeWidget.id, { config: { ...activeWidget.config, valueField: e.target.value } });
+                                updateWidget(activeWidget.id, { config: { ...activeWidget.config, valueField: val } });
                               } else {
-                                updateWidget(activeWidget.id, { config: { ...activeWidget.config, seriesFields: e.target.value.split(",").map(s => s.trim()) } });
+                                updateWidget(activeWidget.id, { config: { ...activeWidget.config, seriesFields: [val] } });
                               }
                             }}
                             className="rounded-2xl h-11 text-sm font-bold px-4"
-                            placeholder="e.g. revenue, count"
+                            placeholder="e.g. price, amount"
                           />
                        </div>
                      </div>

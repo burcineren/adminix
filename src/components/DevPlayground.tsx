@@ -238,6 +238,33 @@ export function DevPlayground() {
             enableReports={true}
             showDashboard={true}
             title="Adminix Playground"
+            enableAuth={true}
+            auth={{
+              provider: {
+                login: async (credentials) => {
+                  // Simulate network delay
+                  await new Promise(resolve => setTimeout(resolve, 800));
+                  return { 
+                    token: "mock-jwt-token", 
+                    user: { id: "1", email: credentials.email || "admin@example.com", roles: ["admin"] } 
+                  };
+                },
+                logout: async () => {
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                },
+                getUser: async () => {
+                  return { id: "1", email: "admin@example.com", roles: ["admin"] };
+                }
+              }
+            }}
+            globalPermissions={{
+              products: {
+                create: ["admin"],
+                edit: ["admin", "editor"],
+                delete: ["admin"],
+                export: ["admin"]
+              }
+            }}
           />
         </div>
         

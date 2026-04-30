@@ -12,6 +12,8 @@ interface Config {
   typescript: boolean;
   mocks: boolean;
   apiEndpoint: string;
+  enableAuth: boolean;
+  authType?: "jwt" | "custom";
 }
 
 export async function initCommand() {
@@ -109,6 +111,24 @@ export async function initCommand() {
       active: "Yes",
       inactive: "No",
     },
+    {
+      type: "toggle",
+      name: "enableAuth",
+      message: "Enable authentication?",
+      initial: true,
+      active: "Yes",
+      inactive: "No",
+    },
+    {
+      type: prev => prev ? 'select' : null,
+      name: "authType",
+      message: "Select Auth type:",
+      choices: [
+        { title: "JWT", value: "jwt" },
+        { title: "Custom", value: "custom" },
+      ],
+      initial: 0,
+    },
   ]);
 
   const framework = detectedFramework || responses.framework;
@@ -158,7 +178,26 @@ async function setupProject(config: Config) {
     const mockDir = path.join(process.cwd(), "mocks");
     await fs.ensureDir(mockDir);
     // Write a sample mock
-    await fs.writeFile(path.join(mockDir, "server.js"), "// MirageJS Server Setup\nimport { createServer } from 'miragejs';\nexport function makeServer() {\n  return createServer({ routes() { this.namespace = 'api'; this.get('/products', () => []); } });\n}");
+    let mockContent = "// MirageJS Server Setup\nimport { createServer } from 'miragejs';\nexport function makeServer() {\n  return createServer({ routes() { this.namespace = 'api'; this.get('/products', () => []); ";
+    if (config.enableAuth) {
+        mockContent += "this.post('/login', () => ({ token: 'mock-jwt-token', user: { id: 1, email: 'admin@example.com', roles: ['admin'] } })); ";
+    }
+    mockContent += "} });\n}";
+    await fs.writeFile(path.join(mockDir, "server.js"), mockContent);
+  }
+
+  if (config.enableAuth) {
+      const authConfigExample = `
+// auth-config.${config.typescript ? "ts" : "js"}
+export const authConfig = {
+  loginEndpoint: "/api/login",
+  userEndpoint: "/api/me",
+  tokenField: "token",
+  userField: "user"
+};
+`;
+      await fs.writeFile(path.join(targetDir, `auth-config.${config.typescript ? "ts" : "js"}`), authConfigExample.trim());
+      console.log(pc.gray(`✔ Generated auth configuration in ${targetDir}`));
   }
 
   // Final UI feedback

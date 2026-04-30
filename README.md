@@ -21,6 +21,7 @@ Adminix is a zero-config React library that generates production-ready managemen
 - **Dashboard Designer** — Drag-and-drop interface for users and developers to build custom analytics views.
 - **Resource Analytics** — Every resource automatically gets an "Analytics" tab for context-specific data visualization.
 - **Schema Driven** — Define fields with types, validation, and custom renderers. Full TypeScript autocomplete.
+- **Authentication & RBAC** — Built-in JWT/Custom authentication, role-based access control, and route protection.
 - **Plugin System** — Extend the UI with custom widgets, field types, and mutation hooks.
 - **Export to ZIP** — Generate a clean, production-ready React project from any schema.
 - **Dark Mode** — Beautiful, consistent theming with automatic dark mode support.
@@ -78,6 +79,40 @@ export default function App() {
   );
 }
 ```
+
+---
+
+## 🔒 Authentication & Permissions
+
+Enable authentication to instantly protect your dashboard with a login screen, JWT session management, and Role-Based Access Control (RBAC).
+
+```tsx
+import { Adminix } from 'adminix';
+
+export default function App() {
+  return (
+    <Adminix 
+      endpoint="/api/products" 
+      enableAuth={true}
+      auth={{
+        loginEndpoint: "/api/auth/login",
+        userEndpoint: "/api/auth/me",
+        tokenField: "token" // automatically injected into API requests
+      }}
+      globalPermissions={{
+        products: {
+          create: ["admin"],
+          edit: ["admin", "editor"],
+          delete: ["admin"],
+          view: ["admin", "editor", "viewer"]
+        }
+      }}
+    />
+  );
+}
+```
+
+UI elements (buttons, actions, routes) will automatically show/hide based on the authenticated user's roles.
 
 ---
 

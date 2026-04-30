@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { ResourceDefinition, AdminixPlugin } from "@/types/resource-types";
 import type { ReportDefinition } from "@/types/report-types";
+import type { AuthConfig, GlobalPermissions } from "@/types/auth-types";
 
 export interface AdminState {
   // Active resource
@@ -52,6 +53,14 @@ export interface AdminState {
   removeReport: (id: string) => void;
   enableReports: boolean;
   setEnableReports: (enabled: boolean) => void;
+
+  // Auth & Permissions
+  enableAuth: boolean;
+  setEnableAuth: (enabled: boolean) => void;
+  authConfig?: AuthConfig;
+  setAuthConfig: (config?: AuthConfig) => void;
+  globalPermissions?: GlobalPermissions;
+  setGlobalPermissions: (permissions?: GlobalPermissions) => void;
 }
 
 export const useAdminStore = create<AdminState>((set) => ({
@@ -127,4 +136,11 @@ export const useAdminStore = create<AdminState>((set) => ({
   }),
   enableReports: false,
   setEnableReports: (enabled: boolean) => set({ enableReports: enabled }),
+
+  enableAuth: false,
+  setEnableAuth: (enabled: boolean) => set({ enableAuth: enabled }),
+  authConfig: undefined,
+  setAuthConfig: (config?: AuthConfig) => set({ authConfig: config }),
+  globalPermissions: undefined,
+  setGlobalPermissions: (permissions?: GlobalPermissions) => set({ globalPermissions: permissions }),
 }));

@@ -2,6 +2,7 @@ import type { ZodSchema } from "zod";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ComponentType } from "react";
 import type { InferredType, FilterType } from "@/core/schema/types";
+import type { AuthConfig, GlobalPermissions } from "./auth-types";
 
 // ── Field Types ──────────────────────────────────────────────────────────────
 
@@ -176,4 +177,9 @@ export interface AdminixProps {
   // Reports
   enableReports?: boolean;
   initialReports?: import("./report-types").ReportDefinition[];
+
+  // Auth & Permissions
+  enableAuth?: boolean;
+  auth?: AuthConfig;
+  globalPermissions?: GlobalPermissions;
 }

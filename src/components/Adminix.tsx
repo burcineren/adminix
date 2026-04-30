@@ -10,6 +10,7 @@ import { ReportsPage } from "@/components/reports/ReportsPage";
 import { GlobalModalManager } from "@/components/GlobalModalManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { validateResourceDefinition } from "@/utils/resource-schema";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import type { AdminixProps, ResourceDefinition } from "@/types/resource-types";
 import { cn } from "@/utils/cn";
 import { ThemeProvider, useTheme } from "@/core/theme-context";
@@ -67,6 +68,9 @@ function AdminixInnerWrapper({
   plugins,
   enableReports,
   initialReports,
+  enableAuth,
+  auth,
+  globalPermissions,
 }: AdminixProps & { children: React.ReactNode }) {
   const setResources = useAdminStore((state: AdminState) => state.setResources);
   const setActiveResource = useAdminStore((state: AdminState) => state.setActiveResource);
@@ -74,6 +78,9 @@ function AdminixInnerWrapper({
   const setEnableReports = useAdminStore((state: AdminState) => state.setEnableReports);
   const setReports = useAdminStore((state: AdminState) => state.setReports);
   const existingReports = useAdminStore((state: AdminState) => state.reports);
+  const setEnableAuth = useAdminStore((state: AdminState) => state.setEnableAuth);
+  const setAuthConfig = useAdminStore((state: AdminState) => state.setAuthConfig);
+  const setGlobalPermissions = useAdminStore((state: AdminState) => state.setGlobalPermissions);
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
@@ -127,6 +134,10 @@ function AdminixInnerWrapper({
     if (initialReports && (existingReports.length === 0 || initialReports.some(r => r._source === 'playground'))) {
       setReports(initialReports);
     }
+
+    if (enableAuth !== undefined) setEnableAuth(enableAuth);
+    if (auth !== undefined) setAuthConfig(auth);
+    if (globalPermissions !== undefined) setGlobalPermissions(globalPermissions);
   }, [
     normalizedResources,
     setResources,
@@ -136,7 +147,13 @@ function AdminixInnerWrapper({
     setEnableReports,
     initialReports,
     setReports,
-    existingReports.length
+    existingReports.length,
+    enableAuth,
+    setEnableAuth,
+    auth,
+    setAuthConfig,
+    globalPermissions,
+    setGlobalPermissions
   ]);
 
   useEffect(() => {
@@ -172,12 +189,14 @@ function AdminixInnerWrapper({
     <div className={cn("adminix-root", isDark && "dark", "h-screen w-full overflow-hidden")}>
       <div className="flex h-full w-full overflow-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
         <GlobalModalManager />
-        {React.Children.map(children, (child) => {
-          if (React.isValidElement(child)) {
-            return React.cloneElement(child as React.ReactElement<{ userRole?: string }>, { userRole });
-          }
-          return child;
-        })}
+        <ProtectedRoute>
+          {React.Children.map(children, (child) => {
+            if (React.isValidElement(child)) {
+              return React.cloneElement(child as React.ReactElement<{ userRole?: string }>, { userRole });
+            }
+            return child;
+          })}
+        </ProtectedRoute>
         <Toaster position="bottom-right" richColors />
       </div>
     </div>

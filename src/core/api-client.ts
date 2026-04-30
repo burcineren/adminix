@@ -308,14 +308,21 @@ export async function request<T = unknown>(
  * Typed REST API client with convenience methods for all HTTP verbs.
  * Wraps the core `request()` function.
  */
+let _token: string | null = null;
+
 export const apiClient = {
+  setToken: (token: string | null) => {
+    _token = token;
+  },
+
   /** GET request */
   async get<T = unknown>(
     url: string,
     options?: Omit<RequestOptions, "method" | "body">,
     config?: ApiConfig
   ): Promise<T> {
-    const res = await request<T>(url, { ...options, method: "GET" }, config);
+    const headers = _token ? { Authorization: `Bearer ${_token}`, ...options?.headers } : options?.headers;
+    const res = await request<T>(url, { ...options, headers, method: "GET" }, config);
     return res.data;
   },
 
@@ -326,7 +333,8 @@ export const apiClient = {
     options?: Omit<RequestOptions, "method" | "body">,
     config?: ApiConfig
   ): Promise<T> {
-    const res = await request<T>(url, { ...options, method: "POST", body }, config);
+    const headers = _token ? { Authorization: `Bearer ${_token}`, ...options?.headers } : options?.headers;
+    const res = await request<T>(url, { ...options, headers, method: "POST", body }, config);
     return res.data;
   },
 
@@ -337,7 +345,8 @@ export const apiClient = {
     options?: Omit<RequestOptions, "method" | "body">,
     config?: ApiConfig
   ): Promise<T> {
-    const res = await request<T>(url, { ...options, method: "PUT", body }, config);
+    const headers = _token ? { Authorization: `Bearer ${_token}`, ...options?.headers } : options?.headers;
+    const res = await request<T>(url, { ...options, headers, method: "PUT", body }, config);
     return res.data;
   },
 
@@ -348,7 +357,8 @@ export const apiClient = {
     options?: Omit<RequestOptions, "method" | "body">,
     config?: ApiConfig
   ): Promise<T> {
-    const res = await request<T>(url, { ...options, method: "PATCH", body }, config);
+    const headers = _token ? { Authorization: `Bearer ${_token}`, ...options?.headers } : options?.headers;
+    const res = await request<T>(url, { ...options, headers, method: "PATCH", body }, config);
     return res.data;
   },
 
@@ -359,7 +369,8 @@ export const apiClient = {
     options?: Omit<RequestOptions, "method" | "body">,
     config?: ApiConfig
   ): Promise<T> {
-    const res = await request<T>(url, { ...options, method: "DELETE", body }, config);
+    const headers = _token ? { Authorization: `Bearer ${_token}`, ...options?.headers } : options?.headers;
+    const res = await request<T>(url, { ...options, headers, method: "DELETE", body }, config);
     return res.data;
   },
 };

@@ -12,6 +12,7 @@ import { cn } from "@/utils/cn";
 import { ReportBuilder } from "./reports/ReportBuilder";
 import { WidgetGrid } from "./reports/WidgetGrid";
 import type { ReportDefinition, ReportWidget } from "@/types/report-types";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface ResourceViewProps {
     resource: ResourceDefinition;
@@ -49,7 +50,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
         enableReports
     } = useAdminStore();
 
-    const permissions = resource.permissions ?? {};
+    const { hasPermission } = usePermissions();
 
     // Find if there's a specific report for this resource
     const resourceReport = useMemo(() => {
@@ -162,7 +163,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
                             />
                         )}
                         <div className="flex items-center gap-2 ml-auto">
-                            {resource.exportable !== false && permissions.export !== false && isSchemaDetected && (
+                            {resource.exportable !== false && hasPermission(resource, "export") && isSchemaDetected && (
                                 <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 rounded-xl font-bold">
                                     <Download className="h-3.5 w-3.5" />
                                     Export
@@ -189,7 +190,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
                                     Filters
                                 </Button>
                             )}
-                            {permissions.create !== false && (
+                            {hasPermission(resource, "create") && (
                                 <Button onClick={openCreateModal} className="gap-1.5 rounded-xl font-black shadow-lg shadow-[hsl(var(--primary)/0.2)]">
                                     <Plus className="h-4 w-4" />
                                     Create {label}
@@ -241,8 +242,8 @@ export function ResourceView({ resource }: ResourceViewProps) {
                                 fields={schema.fields}
                                 data={list.data}
                                 loading={list.isLoading || list.isFetching}
-                                onEdit={permissions.edit !== false ? openEditModal : undefined}
-                                onDelete={permissions.delete !== false ? openDeleteDialog : undefined}
+                                onEdit={hasPermission(resource, "edit") ? openEditModal : undefined}
+                                onDelete={hasPermission(resource, "delete") ? openDeleteDialog : undefined}
                                 onRowSelectionChange={setSelectedRows}
                                 serverSorting={resource.pagination?.mode !== "client"}
                                 onSortChange={(field, dir) => { setSort(field, dir); }}

@@ -16,6 +16,8 @@ import {
 import { Button } from "@/ui/Button";
 import { ThemeToggle } from "@/ui/ThemeToggle";
 import { Input } from "@/ui/Input";
+import { UserProfile } from "@/components/auth/UserProfile";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface SidebarProps {
   resources: ResourceDefinition[];
@@ -42,13 +44,10 @@ export function Sidebar({
   } = useAdminStore();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const { hasPermission } = usePermissions();
 
   const filteredResources = resources
-    .filter((res) => {
-      if (!res.permissions?.roles || res.permissions.roles.length === 0) return true;
-      if (!userRole) return false;
-      return res.permissions.roles.includes(userRole);
-    })
+    .filter((res) => hasPermission(res, "view", userRole))
     .filter((res) => {
       if (!searchQuery) return true;
       const lowerQuery = searchQuery.toLowerCase();
@@ -286,6 +285,8 @@ export function TopBar({ title }: TopBarProps) {
             </button>
           ))}
         </div>
+        <div className="h-4 w-px bg-[hsl(var(--border))] mx-1" />
+        <UserProfile />
       </div>
     </header>
   );

@@ -31,6 +31,7 @@ import { useTableColumns } from "@/hooks/useTableColumns";
 import { Pagination } from "@/components/Pagination";
 import { BulkActions } from "@/components/BulkActions";
 import type { UsePaginationReturn } from "@/hooks/usePagination";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface DataTableProps {
     resource: ResourceDefinition;
@@ -72,6 +73,7 @@ export const DataTable = memo(function DataTable({
     const [expanded, setExpanded] = useState<ExpandedState>({});
     const [density, setDensity] = useState<"compact" | "standard" | "comfortable">("standard");
     const parentRef = useRef<HTMLDivElement>(null);
+    const { hasPermission } = usePermissions();
     const columns = useTableColumns({
         resource,
         fields,
@@ -97,7 +99,7 @@ export const DataTable = memo(function DataTable({
         getExpandedRowModel: getExpandedRowModel(),
         manualPagination: true,
         manualSorting: serverSorting,
-        enableRowSelection: resource.permissions?.bulkDelete !== false,
+        enableRowSelection: hasPermission(resource, "bulkDelete") && resource.permissions?.bulkDelete !== false,
         getRowCanExpand: () => !!resource.expandable,
     });
 
@@ -130,8 +132,8 @@ export const DataTable = memo(function DataTable({
                             onBulkDelete={onBulkDelete}
                             onBulkExport={onBulkExport}
                             loading={isBulkDeleting}
-                            canDelete={resource.permissions?.delete !== false}
-                            canExport={resource.exportable !== false}
+                            canDelete={hasPermission(resource, "delete")}
+                            canExport={hasPermission(resource, "export") && resource.exportable !== false}
                         />
                     )}
                 </div>

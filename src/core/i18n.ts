@@ -29,6 +29,22 @@ export interface Translations {
     update_success: string;
     error_occurred: string;
   };
+  auth: {
+    welcome_back: string;
+    enter_credentials: string;
+    email: string;
+    password: string;
+    sign_in: string;
+    signing_in: string;
+    create_account: string;
+    sign_up_to_get_started: string;
+    name: string;
+    sign_up: string;
+    creating_account: string;
+    invalid_email: string;
+    password_min_length: string;
+    name_min_length: string;
+  };
 }
 
 const en: Translations = {
@@ -58,6 +74,22 @@ const en: Translations = {
     update_success: "Item updated successfully",
     error_occurred: "An error occurred",
   },
+  auth: {
+    welcome_back: "Welcome Back",
+    enter_credentials: "Enter your credentials to access your account",
+    email: "Email",
+    password: "Password",
+    sign_in: "Sign In",
+    signing_in: "Signing in...",
+    create_account: "Create Account",
+    sign_up_to_get_started: "Sign up to get started",
+    name: "Name",
+    sign_up: "Sign Up",
+    creating_account: "Creating account...",
+    invalid_email: "Invalid email address",
+    password_min_length: "Password must be at least 6 characters",
+    name_min_length: "Name must be at least 2 characters",
+  },
 };
 
 const tr: Translations = {
@@ -86,6 +118,22 @@ const tr: Translations = {
     create_success: "Öğe başarıyla oluşturuldu",
     update_success: "Öğe başarıyla güncellendi",
     error_occurred: "Bir hata oluştu",
+  },
+  auth: {
+    welcome_back: "Tekrar Hoş Geldiniz",
+    enter_credentials: "Hesabınıza erişmek için bilgilerinizi girin",
+    email: "E-posta",
+    password: "Şifre",
+    sign_in: "Giriş Yap",
+    signing_in: "Giriş yapılıyor...",
+    create_account: "Hesap Oluştur",
+    sign_up_to_get_started: "Başlamak için kayıt olun",
+    name: "İsim",
+    sign_up: "Kayıt Ol",
+    creating_account: "Hesap oluşturuluyor...",
+    invalid_email: "Geçersiz e-posta adresi",
+    password_min_length: "Şifre en az 6 karakter olmalıdır",
+    name_min_length: "İsim en az 2 karakter olmalıdır",
   },
 };
 

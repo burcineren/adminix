@@ -1,6 +1,6 @@
 {
   "name": "adminix",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Build admin panels from your API with zero configuration - Adminix",
   "keywords": [
     "admin",

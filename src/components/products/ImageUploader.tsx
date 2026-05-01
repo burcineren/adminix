@@ -1,9 +1,8 @@
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { Image as ImageIcon, X, GripVertical, UploadCloud, Loader2, Star } from "lucide-react";
+import { X, GripVertical, UploadCloud, Loader2, Star } from "lucide-react";
 import { cn } from "@/utils/cn";
-import { Button } from "@/ui/Button";
 import { ProductMedia } from "@/types/product-types";
 
 interface ImageUploaderProps {
@@ -131,16 +130,18 @@ export function ImageUploader({ images, onChange, uploadEndpoint }: ImageUploade
                         </div>
 
                         {image.isMain ? (
-                          <div className="absolute top-2 left-2 bg-[hsl(var(--primary))] text-white p-1 rounded-md shadow-lg">
+                          <div className="absolute top-2 left-2 bg-[hsl(var(--primary))] text-white px-1.5 py-0.5 rounded-md shadow-lg flex items-center gap-1">
                             <Star className="h-3 w-3 fill-current" />
+                            <span className="text-[8px] font-black uppercase tracking-tighter">Main</span>
                           </div>
                         ) : (
                           <button
                             type="button"
                             onClick={() => setMainImage(image.id)}
-                            className="absolute top-2 left-2 bg-black/40 opacity-0 group-hover:opacity-100 text-white p-1 rounded-md hover:bg-[hsl(var(--primary))] transition-all"
+                            className="absolute top-2 left-2 bg-black/40 opacity-0 group-hover:opacity-100 text-white p-1.5 rounded-md hover:bg-[hsl(var(--primary))] transition-all backdrop-blur-sm"
+                            title="Set as Main"
                           >
-                            <Star className="h-3 w-3" />
+                            <Star className="h-3.5 w-3.5" />
                           </button>
                         )}
                       </div>

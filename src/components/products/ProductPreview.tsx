@@ -3,7 +3,6 @@ import { ProductFormData } from "@/types/product-types";
 import { Card } from "@/ui/Misc";
 import { Badge } from "@/ui/Misc";
 import { ShoppingCart, Heart, Share2, Info } from "lucide-react";
-import { cn } from "@/utils/cn";
 
 interface ProductPreviewProps {
   data: ProductFormData;
@@ -98,15 +97,30 @@ export function ProductPreview({ data }: ProductPreviewProps) {
         </div>
       </Card>
 
-      <div className="mt-8 grid grid-cols-2 gap-4">
-        <Card className="p-4 bg-[hsl(var(--primary)/0.03)] border-[hsl(var(--primary)/0.1)]">
-          <p className="text-[10px] font-black uppercase text-[hsl(var(--primary))] mb-1 opacity-70">Variants</p>
-          <p className="text-lg font-black">{data.variants.length}</p>
-        </Card>
-        <Card className="p-4 bg-[hsl(var(--primary)/0.03)] border-[hsl(var(--primary)/0.1)]">
-          <p className="text-[10px] font-black uppercase text-[hsl(var(--primary))] mb-1 opacity-70">Stock</p>
-          <p className="text-lg font-black">{data.variants.reduce((acc, v) => acc + (v.stock || 0), 0) || data.stock || 0}</p>
-        </Card>
+      <div className="mt-8 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <Card className="p-4 bg-[hsl(var(--primary)/0.03)] border-[hsl(var(--primary)/0.1)]">
+            <p className="text-[10px] font-black uppercase text-[hsl(var(--primary))] mb-1 opacity-70">Variants</p>
+            <p className="text-lg font-black">{data.variants.length}</p>
+          </Card>
+          <Card className="p-4 bg-[hsl(var(--primary)/0.03)] border-[hsl(var(--primary)/0.1)]">
+            <p className="text-[10px] font-black uppercase text-[hsl(var(--primary))] mb-1 opacity-70">Stock</p>
+            <p className="text-lg font-black">{data.variants.reduce((acc, v) => acc + (v.stock || 0), 0) || data.stock || 0}</p>
+          </Card>
+        </div>
+
+        {data.variants.length > 0 && (
+          <Card className="p-4 border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.1)]">
+            <p className="text-[10px] font-black uppercase text-[hsl(var(--muted-foreground))] mb-3 tracking-widest">Available Options</p>
+            <div className="flex flex-wrap gap-2">
+              {Array.from(new Set(data.variants.flatMap(v => Object.values(v.options)))).map(opt => (
+                <span key={opt} className="px-2 py-1 bg-white dark:bg-black/20 border border-[hsl(var(--border))] rounded-md text-[10px] font-bold">
+                  {opt}
+                </span>
+              ))}
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );

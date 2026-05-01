@@ -54,7 +54,7 @@ function GlobalModalInner({ resource }: { resource: ResourceDefinition }) {
             try {
                 await crud.create(data);
                 closeCreateModal();
-            } catch (err) {
+            } catch {
                 // Toasts handled inside useCrudActions
             }
         },
@@ -67,7 +67,7 @@ function GlobalModalInner({ resource }: { resource: ResourceDefinition }) {
             try {
                 await crud.update(editingRow[pk], data);
                 closeEditModal();
-            } catch (err) {
+            } catch {
                 // Toasts handled inside useCrudActions
             }
         },
@@ -79,7 +79,7 @@ function GlobalModalInner({ resource }: { resource: ResourceDefinition }) {
         try {
             await crud.remove(deletingRow[pk]);
             closeDeleteDialog();
-        } catch (err) {
+        } catch {
             // Toasts handled inside useCrudActions
         }
     }, [crud, deletingRow, pk, closeDeleteDialog]);

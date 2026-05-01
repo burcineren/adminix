@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { Plus, X, Trash2, RefreshCw } from "lucide-react";
 import { Button } from "@/ui/Button";
 import { Input } from "@/ui/Input";
 import { Card } from "@/ui/Misc";
 import { ProductVariant } from "@/types/product-types";
-import { cn } from "@/utils/cn";
+import { cartesian, generateId } from "@/utils/product-utils";
 
 interface VariantOption {
   id: string;
@@ -23,7 +23,7 @@ export function VariantBuilder({ variants, onChange, basePrice }: VariantBuilder
   const [inputValue, setInputValue] = useState<Record<string, string>>({});
 
   const addOption = () => {
-    setOptions([...options, { id: Math.random().toString(36).substring(7), name: "", values: [] }]);
+    setOptions([...options, { id: generateId(), name: "", values: [] }]);
   };
 
   const removeOption = (id: string) => {
@@ -58,9 +58,6 @@ export function VariantBuilder({ variants, onChange, basePrice }: VariantBuilder
       return;
     }
 
-    const cartesian = (...args: any[][]) => 
-      args.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
-
     const combinations = cartesian(...validOptions.map(o => o.values));
     
     const newVariants: ProductVariant[] = (Array.isArray(combinations[0]) ? combinations : combinations.map(c => [c])).map((combo: string[]) => {
@@ -75,7 +72,7 @@ export function VariantBuilder({ variants, onChange, basePrice }: VariantBuilder
       const existing = variants.find(v => v.name === name);
       
       return {
-        id: existing?.id || Math.random().toString(36).substring(7),
+        id: existing?.id || generateId(),
         name,
         options: opts,
         price: existing?.price ?? basePrice,

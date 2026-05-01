@@ -13,7 +13,8 @@ import { validateResourceDefinition } from "@/utils/resource-schema";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import type { AdminixProps, ResourceDefinition } from "@/types/resource-types";
 import { cn } from "@/utils/cn";
-import { ThemeProvider, useTheme } from "@/core/theme-context";
+import { ThemeProvider } from "@/core/theme-context";
+import { useTheme } from "@/hooks/useTheme";
 import {
   LayoutDashboard,
   Zap,

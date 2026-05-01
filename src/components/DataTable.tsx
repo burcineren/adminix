@@ -66,6 +66,7 @@ export const DataTable = memo(function DataTable({
     isBulkDeleting,
     onInlineUpdate,
 }: DataTableProps) {
+    "use no memo";
     const { language } = useI18n();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -84,6 +85,7 @@ export const DataTable = memo(function DataTable({
         onInlineUpdate,
     });
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
         data,
         columns,

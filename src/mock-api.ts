@@ -297,8 +297,18 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
     }
   }
 
+  // ── /api/upload ────────────────────────────────────────────────────────────
+  if (url.includes("/api/upload")) {
+    await delay(1000);
+    return json({
+      success: true,
+      url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60",
+      id: "img_" + Math.random().toString(36).substring(7)
+    });
+  }
+
   return originalFetch(input, init);
-};
+}
 
 declare global {
   interface Window {

@@ -178,6 +178,16 @@ export function DemoRunner() {
                             <Adminix
                                 resources={DEMO_RESOURCES}
                                 title="Corporate Admin"
+                                productConfig={{
+                                    createEndpoint: "/api/products",
+                                    uploadEndpoint: "/api/upload",
+                                    categories: [
+                                        { label: "Electronics", value: "electronics" },
+                                        { label: "Furniture", value: "furniture" },
+                                        { label: "Accessories", value: "accessories" },
+                                        { label: "Stationery", value: "stationery" },
+                                    ]
+                                }}
                             />
                         </div>
                     )}

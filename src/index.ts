@@ -116,3 +116,16 @@ export type {
   AdminixProps,
   AdminixProps as AdminPanelProps,
 } from "./types/resource-types";
+
+// Product System
+export { ProductCreatePage } from "./components/products/ProductCreatePage";
+export { ProductForm } from "./components/products/ProductForm";
+export { ImageUploader } from "./components/products/ImageUploader";
+export { VariantBuilder } from "./components/products/VariantBuilder";
+export { ProductPreview } from "./components/products/ProductPreview";
+export type {
+  ProductVariant,
+  ProductMedia,
+  ProductFormData,
+  ProductConfig,
+} from "./types/product-types";

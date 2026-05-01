@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Search,
   BarChart3,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/ui/Button";
 import { ThemeToggle } from "@/ui/ThemeToggle";
@@ -156,6 +157,16 @@ export function Sidebar({
                 className="h-9 pl-9 bg-[hsl(var(--muted)/0.3)] border-none focus-visible:ring-1 focus-visible:ring-[hsl(var(--primary)/0.5)] transition-all text-xs"
               />
             </div>
+          </div>
+
+          <div className="px-3 mb-6">
+            <Button 
+              onClick={() => setActiveResource("product_create")}
+              className="w-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-white rounded-xl h-10 font-bold shadow-lg shadow-[hsl(var(--primary)/0.2)] group transition-all active:scale-95"
+            >
+              <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+              Add Product
+            </Button>
           </div>
 
           <div className="px-3 mt-4 mb-1">

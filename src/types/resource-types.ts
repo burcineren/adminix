@@ -182,4 +182,7 @@ export interface AdminixProps {
   enableAuth?: boolean;
   auth?: AuthConfig;
   globalPermissions?: GlobalPermissions;
+
+  // Product System
+  productConfig?: import("./product-types").ProductConfig;
 }

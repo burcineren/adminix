@@ -240,7 +240,9 @@ export function AdminixTopBar() {
   );
 }
 
-export function AdminixContent() {
+import { ProductCreatePage } from "@/components/products/ProductCreatePage";
+
+export function AdminixContent(props: { productConfig?: import("@/types/product-types").ProductConfig }) {
   const { activeResource, resources } = useAdminStore() as AdminState;
   const current = resources.find((r: ResourceDefinition) => r.name === activeResource);
 
@@ -250,6 +252,8 @@ export function AdminixContent() {
         <Dashboard />
       ) : activeResource === "reports" ? (
         <ReportsPage />
+      ) : activeResource === "product_create" ? (
+        <ProductCreatePage config={props.productConfig} />
       ) : current ? (
         <ResourceView key={current.name} resource={current} />
       ) : (
@@ -266,7 +270,7 @@ export const Adminix = Object.assign(
         <AdminixSidebar {...props} />
         <AdminixMain>
           <AdminixTopBar />
-          <AdminixContent />
+          <AdminixContent productConfig={props.productConfig} />
         </AdminixMain>
       </AdminixRoot>
     );

@@ -156,7 +156,7 @@ export const VisualSchemaEditor = React.memo(({ resource, onChange }: VisualSche
     }, [fields, onChange, resource]);
 
     const typeOptions = React.useMemo(() => {
-        const TYPE_ICONS: Record<string, any> = {
+        const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
             string: Type,
             number: Hash,
             boolean: CheckSquare,

@@ -270,7 +270,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
       ];
     }
     
-    let items = window.__mock_storage[resourceName];
+    const items = window.__mock_storage[resourceName];
 
     if (method === "GET" && !url.match(new RegExp(`/api/${resourceName}/\\d+`))) {
       return json(paginate(items, getParams()));
@@ -286,13 +286,13 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
     if (method === "PUT") {
       const id = getId();
       const body = getBody();
-      window.__mock_storage[resourceName] = items.map((i: any) => i.id === id ? { ...i, ...body } : i);
-      return json(window.__mock_storage[resourceName].find((i: any) => i.id === id));
+      window.__mock_storage[resourceName] = items.map((i: Record<string, unknown>) => i.id === id ? { ...i, ...body } : i);
+      return json(window.__mock_storage[resourceName].find((i: Record<string, unknown>) => i.id === id));
     }
     
     if (method === "DELETE") {
       const id = getId();
-      window.__mock_storage[resourceName] = items.filter((i: any) => i.id !== id);
+      window.__mock_storage[resourceName] = items.filter((i: Record<string, unknown>) => i.id !== id);
       return json({ success: true });
     }
   }
@@ -312,7 +312,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
 
 declare global {
   interface Window {
-    __mock_storage: Record<string, any[]>;
+    __mock_storage: Record<string, Record<string, unknown>[]>;
   }
 }
 

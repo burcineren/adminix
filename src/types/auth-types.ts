@@ -4,7 +4,7 @@ export interface User {
   name?: string;
   avatar?: string;
   roles?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface AuthState {
@@ -30,9 +30,9 @@ export interface AuthConfig {
 }
 
 export interface AuthProvider {
-  login: (credentials: any) => Promise<{ user: User; token: string }>;
+  login: (credentials: unknown) => Promise<{ user: User; token: string }>;
   logout: () => Promise<void>;
-  register?: (data: any) => Promise<{ user: User; token: string }>;
+  register?: (data: unknown) => Promise<{ user: User; token: string }>;
   getUser?: (token: string) => Promise<User>;
 }
 

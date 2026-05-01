@@ -1,21 +1,21 @@
 import { useCallback, useState } from "react";
 import { useAuthStore } from "./auth-store";
 import { useAdminStore } from "@/core/store";
-import type { AuthConfig, AuthProvider } from "@/types/auth-types";
 import { apiClient } from "@/core/api-client";
 import { toast } from "sonner";
+import { AdminState } from "@/core/store";
 
 export function useAuth() {
   const store = useAuthStore();
-  const config = useAdminStore((s: any) => s.authConfig) as AuthConfig | undefined;
-  const enableAuth = useAdminStore((s: any) => s.enableAuth) as boolean;
+  const config = useAdminStore((s: AdminState) => s.authConfig);
+  const enableAuth = useAdminStore((s: AdminState) => s.enableAuth);
   const [isLoading, setIsLoading] = useState(false);
 
-  const getNestedValue = (obj: any, path: string) => {
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  const getNestedValue = (obj: Record<string, unknown>, path: string) => {
+    return path.split('.').reduce((acc, part) => (acc as Record<string, unknown>) && (acc as Record<string, unknown>)[part], obj);
   };
 
-  const login = useCallback(async (credentials: any) => {
+  const login = useCallback(async (credentials: Record<string, unknown>) => {
     setIsLoading(true);
     try {
       if (config?.provider) {
@@ -46,9 +46,10 @@ export function useAuth() {
       store.login(user || { id: 1, email: credentials.email, roles: [] }, token);
       apiClient.setToken(token);
       return { success: true };
-    } catch (err: any) {
-      toast.error(err.message || "Login failed");
-      return { success: false, error: err.message };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Login failed";
+      toast.error(message);
+      return { success: false, error: message };
     } finally {
       setIsLoading(false);
     }

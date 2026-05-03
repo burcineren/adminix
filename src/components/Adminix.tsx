@@ -54,6 +54,8 @@ export function AdminixRoot({
   );
 }
 
+import { GlobalLoader } from "@/ui/GlobalLoader";
+
 function AdminixInnerWrapper({
   children,
   resources,
@@ -188,7 +190,8 @@ function AdminixInnerWrapper({
 
   return (
     <div className={cn("adminix-root", isDark && "dark", "h-screen w-full overflow-hidden")}>
-      <div className="flex h-full w-full overflow-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <GlobalLoader />
+      <div className="flex h-screen w-full overflow-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
         <GlobalModalManager />
         <ProtectedRoute>
           {React.Children.map(children, (child) => {
@@ -234,7 +237,7 @@ export function AdminixTopBar() {
         activeResource === "dashboard"
           ? t.common.dashboard
           : activeResource === "reports"
-            ? "Reports"
+            ? t.common.reports
             : (current?.label ?? current?.name)
       }
     />
@@ -248,7 +251,7 @@ export function AdminixContent(props: { productConfig?: import("@/types/product-
   const current = resources.find((r: ResourceDefinition) => r.name === activeResource);
 
   return (
-    <main className="flex-1 overflow-y-auto pt-14">
+    <main className="flex-1 overflow-y-auto min-h-0">
       {activeResource === "dashboard" ? (
         <Dashboard />
       ) : activeResource === "reports" ? (
@@ -296,9 +299,7 @@ function ValidationErrorScreen({ errors }: { errors: string[] }) {
           </div>
           <div className="space-y-2">
             <h2 className="text-2xl font-black tracking-tight uppercase italic text-[hsl(var(--destructive))]">
-              {t.common.settings === "Ayarlar"
-                ? "Geçersiz Yapılandırma"
-                : "Invalid Configuration"}
+              {t.common.invalid_config}
             </h2>
             <ul className="text-left w-full mt-4 space-y-2">
               {errors.map((err, i) => (
@@ -313,7 +314,7 @@ function ValidationErrorScreen({ errors }: { errors: string[] }) {
           </div>
           <Button onClick={() => window.location.reload()} className="w-full">
             <RotateCcw className="mr-2 h-4 w-4" />{" "}
-            {t.common.settings === "Ayarlar" ? "Yenile" : "Refresh"}
+            {t.common.refresh}
           </Button>
         </div>
       </Card>
@@ -323,6 +324,7 @@ function ValidationErrorScreen({ errors }: { errors: string[] }) {
 
 function WelcomeScreen() {
   const { t } = useI18n();
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] gap-8 px-4 animate-in fade-in zoom-in duration-500">
       <div className="text-center space-y-3">
@@ -337,14 +339,10 @@ function WelcomeScreen() {
           </div>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">
-          {t.common.welcome === "Hoş geldiniz"
-            ? "Adminix'e Hoş Geldiniz"
-            : "Welcome to Adminix"}
+          {t.common.welcome_to}
         </h1>
         <p className="text-[hsl(var(--muted-foreground))] max-w-md">
-          {t.common.welcome === "Hoş geldiniz"
-            ? "Başlamak için yan menüden bir kaynak seçin veya kendi şemanızı Adminix bileşenine ekleyin."
-            : "Select a resource from the sidebar to get started, or add resources to your <Adminix> component."}
+          {t.common.select_resource}
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">

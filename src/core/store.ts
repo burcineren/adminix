@@ -61,6 +61,10 @@ export interface AdminState {
   setAuthConfig: (config?: AuthConfig) => void;
   globalPermissions?: GlobalPermissions;
   setGlobalPermissions: (permissions?: GlobalPermissions) => void;
+
+  // Global Loading
+  globalLoading: boolean;
+  setGlobalLoading: (loading: boolean) => void;
 }
 
 export const useAdminStore = create<AdminState>((set) => ({
@@ -70,6 +74,9 @@ export const useAdminStore = create<AdminState>((set) => ({
     else localStorage.removeItem("adminix_active_resource");
     set({ activeResource: name });
   },
+
+  globalLoading: false,
+  setGlobalLoading: (loading: boolean) => set({ globalLoading: loading }),
 
   darkMode: typeof window !== "undefined" 
     ? (localStorage.getItem("adminix_dark_mode") === "true" || (!localStorage.getItem("adminix_dark_mode") && (window.matchMedia("(prefers-color-scheme: dark)").matches || true)))

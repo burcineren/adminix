@@ -1,6 +1,7 @@
-import { useCallback, useState, useMemo } from "react";
+import { useCallback, useState, useMemo, useEffect } from "react";
 import { Plus, Filter, RefreshCw, Download, AlertCircle, Zap, LayoutGrid, List as ListIcon, BarChart3 } from "lucide-react";
 import { useResource } from "@/hooks/useResource";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useAdminStore } from "@/core/store";
 import { DataTable } from "@/components/DataTable";
 import { FilterBar } from "@/components/FilterBar";
@@ -13,6 +14,7 @@ import { ReportBuilder } from "./reports/ReportBuilder";
 import { WidgetGrid } from "./reports/WidgetGrid";
 import type { ReportDefinition, ReportWidget } from "@/types/report-types";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useI18n } from "@/core/i18n";
 
 interface ResourceViewProps {
     resource: ResourceDefinition;
@@ -22,6 +24,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
     const [viewMode, setViewMode] = useState<"list" | "analytics">("list");
     const [showFilters, setShowFilters] = useState(false);
     const [isEditingDashboard, setIsEditingDashboard] = useState(false);
+    const { t } = useI18n();
 
     // ── Store & Resource Hook ──────────────────────────────────────────────────
     const {
@@ -36,6 +39,12 @@ export function ResourceView({ resource }: ResourceViewProps) {
         setSort,
         refetch,
     } = useResource(resource);
+
+    const { setGlobalLoading } = useAdmin();
+
+    useEffect(() => {
+        setGlobalLoading(list.isLoading || list.isFetching);
+    }, [list.isLoading, list.isFetching, setGlobalLoading]);
 
     const {
         openCreateModal,
@@ -100,7 +109,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
     };
 
     return (
-        <div className="flex flex-col gap-4 p-6 animate-fade-in text-[hsl(var(--foreground))] min-h-0">
+        <div className="flex flex-col gap-4 p-6 animate-fade-in text-[hsl(var(--foreground))]">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
@@ -130,7 +139,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
                         )}
                     >
                         <ListIcon className="h-3.5 w-3.5" />
-                        List View
+                        {t.common.list_view}
                     </button>
                     {enableReports && (
                         <button 
@@ -143,7 +152,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
                             )}
                         >
                             <BarChart3 className="h-3.5 w-3.5" />
-                            Analytics
+                            {t.common.analytics}
                         </button>
                     )}
                 </div>
@@ -158,7 +167,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
                                 onChange={(v) => {
                                     filters.setSearchInput(v);
                                 }}
-                                placeholder={`Search ${label.toLowerCase()}…`}
+                                placeholder={`${t.common.search} (${label})`}
                                 className="max-w-sm flex-1"
                             />
                         )}
@@ -166,14 +175,14 @@ export function ResourceView({ resource }: ResourceViewProps) {
                             {resource.exportable !== false && hasPermission(resource, "export") && isSchemaDetected && (
                                 <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 rounded-xl font-bold">
                                     <Download className="h-3.5 w-3.5" />
-                                    Export
+                                    {t.common.export}
                                 </Button>
                             )}
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => void refetch()}
-                                title="Refresh"
+                                title={t.common.refresh}
                                 className={cn(list.isFetching && "animate-spin", "h-9 w-9 rounded-xl")}
                             >
                                 <RefreshCw className="h-4 w-4" />
@@ -187,13 +196,13 @@ export function ResourceView({ resource }: ResourceViewProps) {
                                     className="gap-1.5 rounded-xl font-bold"
                                 >
                                     <Filter className="h-3.5 w-3.5" />
-                                    Filters
+                                    {t.common.filters}
                                 </Button>
                             )}
                             {hasPermission(resource, "create") && (
                                 <Button onClick={openCreateModal} className="gap-1.5 rounded-xl font-black shadow-lg shadow-[hsl(var(--primary)/0.2)]">
                                     <Plus className="h-4 w-4" />
-                                    Create {label}
+                                    {t.common.create} {label}
                                 </Button>
                             )}
                         </div>
@@ -220,19 +229,19 @@ export function ResourceView({ resource }: ResourceViewProps) {
                     ) : list.isSuccess && list.data.length === 0 && !resource.fields?.length && !isSchemaDetected ? (
                         <Card className="border-2 border-dashed border-[hsl(var(--border))] rounded-xl bg-[hsl(var(--muted)/0.05)] py-20">
                             <EmptyState 
-                                title="Waiting for Data"
-                                description={`${label} currently has no records. Adminix needs at least one record to automatically infer the schema.`}
+                                title={t.common.waiting_for_data}
+                                description={t.common.no_records_desc}
                                 icon={Zap}
-                                action={{ label: "Create First Record", onClick: openCreateModal }}
+                                action={{ label: t.common.create_first, onClick: openCreateModal }}
                             />
                         </Card>
                     ) : list.isError ? (
                         <Card className="p-0 border-[hsl(var(--destructive)/0.2)]">
                             <EmptyState 
-                                title="Failed to load records"
-                                description={list.error?.message || "An error occurred."}
+                                title={t.common.failed_load}
+                                description={list.error?.message || t.messages.error_occurred}
                                 icon={AlertCircle}
-                                action={{ label: "Retry Connection", onClick: () => void refetch() }}
+                                action={{ label: t.common.retry, onClick: () => void refetch() }}
                             />
                         </Card>
                     ) : (
@@ -263,7 +272,7 @@ export function ResourceView({ resource }: ResourceViewProps) {
                             defaultResourceName={resource.name}
                             initialReport={resourceReport || {
                                 id: `resource-report-${resource.name}`,
-                                name: `${label} Analytics`,
+                                name: `${label} ${t.common.analytics}`,
                                 description: `Automatically generated dashboard for ${label}`,
                                 widgets: [],
                                 filters: [],
@@ -277,10 +286,10 @@ export function ResourceView({ resource }: ResourceViewProps) {
                     ) : (
                         <div className="flex flex-col gap-4">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-lg font-black uppercase tracking-widest text-[hsl(var(--muted-foreground))] opacity-60 italic">Dashboard Designer</h2>
+                                <h2 className="text-lg font-black uppercase tracking-widest text-[hsl(var(--muted-foreground))] opacity-60 italic">{t.common.designer}</h2>
                                 <Button onClick={() => setIsEditingDashboard(true)} variant="outline" className="gap-2 rounded-xl font-black">
                                     <BarChart3 className="h-4 w-4" />
-                                    Configure Charts
+                                    {t.common.open_designer}
                                 </Button>
                             </div>
                             {resourceReport && resourceReport.widgets.length > 0 ? (
@@ -311,12 +320,12 @@ export function ResourceView({ resource }: ResourceViewProps) {
                                     <div className="h-16 w-16 bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] rounded-full flex items-center justify-center mb-6">
                                         <BarChart3 className="h-8 w-8" />
                                     </div>
-                                    <h3 className="text-xl font-black mb-2 uppercase tracking-tight">No Charts Configured</h3>
+                                    <h3 className="text-xl font-black mb-2 uppercase tracking-tight">{t.common.no_charts}</h3>
                                     <p className="text-sm text-[hsl(var(--muted-foreground))] font-medium text-center max-w-sm mb-8">
                                         Use the Designer to add interactive charts and visualize your {label.toLowerCase()} data.
                                     </p>
                                     <Button onClick={() => setIsEditingDashboard(true)} size="lg" className="rounded-2xl px-10 py-6 font-black shadow-xl shadow-[hsl(var(--primary)/0.2)]">
-                                        Open Dashboard Designer
+                                        {t.common.open_designer}
                                     </Button>
                                 </Card>
                             )}

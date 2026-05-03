@@ -67,7 +67,7 @@ export const DataTable = memo(function DataTable({
     onInlineUpdate,
 }: DataTableProps) {
     "use no memo";
-    const { language } = useI18n();
+    const { t } = useI18n();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -143,7 +143,7 @@ export const DataTable = memo(function DataTable({
                     trigger={
                         <Button variant="outline" size="sm" className="gap-1.5 ml-auto">
                             <Settings2 className="h-3.5 w-3.5" />
-                            {language === 'tr' ? 'Sütunlar' : 'Columns'}
+                            {t.common.columns}
                             {hiddenCount > 0 && (
                                 <span className="ml-1 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-1.5 py-0.5 text-xs leading-none">
                                     {hiddenCount}
@@ -172,19 +172,19 @@ export const DataTable = memo(function DataTable({
                     }
                     items={[
                         { 
-                            label: language === 'tr' ? 'Sıkışık' : 'Compact', 
+                            label: t.common.compact, 
                             onClick: () => setDensity("compact"),
                             icon: <Minimize2 className="h-3.5 w-3.5" />,
                             active: density === "compact"
                         },
                         { 
-                            label: language === 'tr' ? 'Standart' : 'Standard', 
+                            label: t.common.standard, 
                             onClick: () => setDensity("standard"),
                             icon: <LayoutList className="h-3.5 w-3.5" />,
                             active: density === "standard"
                         },
                         { 
-                            label: language === 'tr' ? 'Rahat' : 'Comfortable', 
+                            label: t.common.comfortable, 
                             onClick: () => setDensity("comfortable"),
                             icon: <Maximize2 className="h-3.5 w-3.5" />,
                             active: density === "comfortable"
@@ -196,7 +196,7 @@ export const DataTable = memo(function DataTable({
             {/* Table Area */}
             <div 
               ref={parentRef} 
-              className="overflow-auto max-h-[700px] border-t border-[hsl(var(--border))]"
+              className="overflow-auto border-t border-[hsl(var(--border))]"
             >
                 <table className="w-full text-sm border-collapse">
                     <thead className="sticky top-0 z-20 bg-[hsl(var(--card))] shadow-[0_1px_0_0_hsl(var(--border))]">
@@ -279,10 +279,8 @@ export const DataTable = memo(function DataTable({
                             <tr>
                                 <td colSpan={columns.length} className="py-12">
                                     <EmptyState 
-                                        title={language === 'tr' ? 'Kayıt bulunamadı' : 'No records found'}
-                                        description={language === 'tr' 
-                                            ? 'Mevcut görünüme uygun veri bulamadık.' 
-                                            : "We couldn't find any data matching your current view."}
+                                        title={t.common.no_records_found}
+                                        description={t.common.no_records_found_desc}
                                     />
                                 </td>
                             </tr>

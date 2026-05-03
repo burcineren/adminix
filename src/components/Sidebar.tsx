@@ -43,6 +43,7 @@ export function Sidebar({
     toggleSidebar,
     enableReports,
   } = useAdminStore();
+  const { t } = useI18n();
 
   const [searchQuery, setSearchQuery] = useState("");
   const { hasPermission } = usePermissions();
@@ -118,7 +119,7 @@ export function Sidebar({
                       activeResource === "dashboard" && "scale-110",
                     )}
                   />
-                  <span className="truncate flex-1">Dashboard</span>
+                  <span className="truncate flex-1">{t.common.dashboard}</span>
                 </button>
               </li>
             )}
@@ -141,7 +142,7 @@ export function Sidebar({
                       activeResource === "reports" && "scale-110",
                     )}
                   />
-                  <span className="truncate flex-1">Reports</span>
+                  <span className="truncate flex-1">{t.common.reports}</span>
                 </button>
               </li>
             )}
@@ -151,7 +152,7 @@ export function Sidebar({
             <div className="relative group">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] group-focus-within:text-[hsl(var(--primary))] transition-colors" />
               <Input
-                placeholder="Search..."
+                placeholder={t.common.search}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-9 pl-9 bg-[hsl(var(--muted)/0.3)] border-none focus-visible:ring-1 focus-visible:ring-[hsl(var(--primary)/0.5)] transition-all text-xs"
@@ -165,13 +166,13 @@ export function Sidebar({
               className="w-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-white rounded-xl h-10 font-bold shadow-lg shadow-[hsl(var(--primary)/0.2)] group transition-all active:scale-95"
             >
               <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
-              Add Product
+              {t.common.add_product}
             </Button>
           </div>
 
           <div className="px-3 mt-4 mb-1">
             <p className="px-2 text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--muted-foreground))] opacity-50 mb-1">
-              Resources
+              {t.common.resources}
             </p>
           </div>
           <ul className="space-y-0.5 px-3">
@@ -212,7 +213,7 @@ export function Sidebar({
           {plugins?.some((p) => p.sidebarWidget) && (
             <div className="mt-4 px-3 border-t border-[hsl(var(--border))] pt-4">
               <p className="px-2 text-[10px] font-semibold uppercase tracking-widest text-[hsl(var(--muted-foreground))] mb-1">
-                Plugins
+                {t.common.plugins}
               </p>
               {plugins.map(
                 (p, i) => p.sidebarWidget && <p.sidebarWidget key={i} />,
@@ -248,7 +249,7 @@ interface TopBarProps {
 
 export function TopBar({ title }: TopBarProps) {
   const { toggleSidebar } = useAdminStore();
-  const { language, setLanguage } = useI18n();
+  const { language, setLanguage, t } = useI18n();
 
   const languages: { label: string; value: Language }[] = [
     { label: "EN", value: "en" },
@@ -258,8 +259,8 @@ export function TopBar({ title }: TopBarProps) {
   return (
     <header
       className={cn(
-        "absolute top-0 left-0 right-0 z-10 flex h-14 items-center gap-3 border-b border-[hsl(var(--border))]",
-        "bg-[hsl(var(--background)/0.95)] backdrop-blur-sm px-4",
+        "sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-[hsl(var(--border))]",
+        "bg-[hsl(var(--background)/0.8)] backdrop-blur-md px-6",
       )}
     >
       <Button
@@ -267,7 +268,7 @@ export function TopBar({ title }: TopBarProps) {
         size="icon"
         onClick={toggleSidebar}
         className="h-8 w-8"
-        title="Toggle sidebar"
+        title={t.common.toggle_sidebar}
       >
         <Menu className="h-4 w-4" />
       </Button>

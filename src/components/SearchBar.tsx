@@ -9,7 +9,11 @@ interface SearchBarProps {
     className?: string;
 }
 
-export function SearchBar({ value, onChange, placeholder = "Search…", className }: SearchBarProps) {
+import { useI18n } from "@/core/i18n";
+
+export function SearchBar({ value, onChange, placeholder, className }: SearchBarProps) {
+    const { t } = useI18n();
+    const displayPlaceholder = placeholder ?? t.common.search;
     const ref = useRef<HTMLInputElement>(null);
     const handleClear = useCallback(() => {
         onChange("");
@@ -24,7 +28,7 @@ export function SearchBar({ value, onChange, placeholder = "Search…", classNam
                 type="text"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                placeholder={placeholder}
+                placeholder={displayPlaceholder}
                 className={cn(
                     "flex h-9 w-full min-w-[240px] rounded-md border border-[hsl(var(--input))]",
                     "bg-transparent pl-9 pr-9 py-1 text-sm shadow-sm transition-colors",

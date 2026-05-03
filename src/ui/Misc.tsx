@@ -1,21 +1,32 @@
 import * as React from "react";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
 import { Inbox, LayoutDashboard } from "lucide-react";
+import { useI18n } from "@/core/i18n";
 
-export function LoadingScreen({ message = "Loading..." }: { message?: string }) {
+export function LoadingScreen({ message }: { message?: string }) {
+    const { t } = useI18n();
+    const displayMessage = message ?? t.common.loading;
+    
     return (
-        <div className="flex h-full min-h-[400px] w-full flex-col items-center justify-center gap-6 bg-[hsl(var(--background)/0.3)] backdrop-blur-md animate-fade-in">
+        <div className="flex h-full min-h-[400px] w-full flex-col items-center justify-center gap-8 bg-[hsl(var(--background)/0.5)] backdrop-blur-xl animate-in fade-in duration-500">
             <div className="relative flex items-center justify-center">
-                <div className="absolute h-16 w-16 rounded-full border-4 border-[hsl(var(--primary)/0.1)] border-t-[hsl(var(--primary))] animate-spin" />
-                <div className="absolute h-10 w-10 border-4 border-dashed border-[hsl(var(--primary)/0.3)] rounded-full animate-spin [animation-duration:3s]" />
-                <LayoutDashboard className="h-5 w-5 text-[hsl(var(--primary))] animate-pulse" />
+                <div className="absolute h-24 w-24 rounded-full border-2 border-[hsl(var(--primary)/0.05)] border-t-[hsl(var(--primary))] animate-spin [animation-duration:1.5s]" />
+                <div className="absolute h-16 w-16 border-2 border-dashed border-[hsl(var(--primary)/0.2)] rounded-full animate-spin [animation-duration:3s] [animation-direction:reverse]" />
+                <div className="h-10 w-10 flex items-center justify-center rounded-2xl bg-[hsl(var(--primary))] shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
+                    <LayoutDashboard className="h-5 w-5 text-white animate-pulse" />
+                </div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-                <p className="text-[10px] font-black tracking-[0.3em] uppercase text-[hsl(var(--muted-foreground))] opacity-80 animate-pulse">
-                    {message}
-                </p>
-                <div className="h-0.5 w-24 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
-                    <div className="h-full bg-linear-to-r from-transparent via-[hsl(var(--primary))] to-transparent w-full animate-shimmer scale-x-50" />
+            <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-1">
+                    <p className="text-[10px] font-black tracking-[0.4em] uppercase text-[hsl(var(--primary))] opacity-80">
+                        Adminix {t.common.system}
+                    </p>
+                    <h3 className="text-sm font-bold text-[hsl(var(--foreground))] tracking-tight">
+                        {displayMessage}
+                    </h3>
+                </div>
+                <div className="h-1 w-32 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
+                    <div className="h-full bg-linear-to-r from-transparent via-[hsl(var(--primary))] to-transparent w-full animate-shimmer" />
                 </div>
             </div>
         </div>
@@ -139,8 +150,8 @@ export function Separator({ className }: { className?: string }) {
 // ── New Production Components ────────────────────────────────────────────────
 
 export function EmptyState({
-    title = "No results found",
-    description = "Try adjusting your filters or search term.",
+    title,
+    description,
     icon: Icon = Inbox,
     action,
     className
@@ -151,14 +162,18 @@ export function EmptyState({
     action?: { label: string; onClick: () => void };
     className?: string;
 }) {
+    const { t } = useI18n();
+    const displayTitle = title ?? t.common.no_results;
+    const displayDescription = description ?? t.common.empty_desc;
+
     return (
         <div className={cn("flex flex-col items-center justify-center py-20 px-4 text-center animate-slide-in", className)}>
             <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[hsl(var(--muted)/0.5)] text-[hsl(var(--muted-foreground)/0.5)] mb-6 ring-8 ring-[hsl(var(--muted)/0.2)]">
                 <Icon className="h-10 w-10" />
             </div>
-            <h3 className="text-lg font-black tracking-tight mb-2">{title}</h3>
+            <h3 className="text-lg font-black tracking-tight mb-2">{displayTitle}</h3>
             <p className="text-sm text-[hsl(var(--muted-foreground))] max-w-xs mx-auto leading-relaxed mb-8">
-                {description}
+                {displayDescription}
             </p>
             {action && (
                 <Button onClick={action.onClick} variant="outline" className="font-bold px-6 rounded-xl hover:bg-[hsl(var(--primary)/0.05)] hover:text-[hsl(var(--primary))] transition-all">

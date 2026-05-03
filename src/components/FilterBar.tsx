@@ -6,6 +6,7 @@ import { Switch } from "@/ui/Misc";
 import { Button } from "@/ui/Button";
 import type { FilterState } from "@/hooks/useFilters";
 import { cn } from "@/utils/cn";
+import { useI18n } from "@/core/i18n";
 
 interface FilterBarProps {
     fields: UISchemaField[];
@@ -22,6 +23,7 @@ export function FilterBar({
     onClear,
     hasActiveFilters,
 }: FilterBarProps) {
+    const { t } = useI18n();
     const filterableFields = fields.filter(
         (f) => f.filter !== "none" && !f.hidden
     );
@@ -35,7 +37,7 @@ export function FilterBar({
         )}>
             <div className="flex items-center gap-2 text-sm font-semibold text-[hsl(var(--foreground))] shrink-0 border-r border-[hsl(var(--border))] pr-4 mr-1">
                 <Filter className="h-4 w-4 text-[hsl(var(--primary))]" />
-                Filters
+                {t.common.filters}
             </div>
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
@@ -57,7 +59,7 @@ export function FilterBar({
                     className="h-8 gap-1.5 text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--destructive))] ml-auto"
                 >
                     <X className="h-3 w-3" />
-                    Reset
+                    {t.common.reset}
                 </Button>
             )}
         </div>
@@ -74,13 +76,14 @@ function FilterField({
     onChange: (val: unknown) => void;
 }) {
     const label = field.label;
+    const { t } = useI18n();
 
     switch (field.filter) {
         case "select":
             return (
                 <div className="min-w-[140px]">
                     <Select
-                        options={[{ label: `All ${label}`, value: "__all__" }, ...(field.options ?? [])]}
+                        options={[{ label: `${t.common.all} ${label}`, value: "__all__" }, ...(field.options ?? [])]}
                         value={value ? String(value) : "__all__"}
                         onChange={(v) => onChange(v === "__all__" ? undefined : v)}
                         label={label}
@@ -99,7 +102,7 @@ function FilterField({
                             onCheckedChange={(v) => onChange(v ? true : undefined)}
                         />
                         <span className="text-sm font-medium">
-                            {value === true ? "Yes" : "Any"}
+                            {value === true ? t.common.yes : t.common.any}
                         </span>
                     </div>
                 </div>
@@ -110,7 +113,7 @@ function FilterField({
                 <div className="flex flex-col gap-1.5">
                     <span className="text-xs font-medium text-[hsl(var(--muted-foreground))] flex items-center gap-1">
                         <Hash className="h-3 w-3" />
-                        {label} Range
+                        {label} {t.common.range}
                     </span>
                     <div className="flex items-center gap-2">
                         <Input
@@ -119,7 +122,7 @@ function FilterField({
                             onChange={(e) =>
                                 onChange({ ...(value as object ?? {}), min: e.target.value || undefined })
                             }
-                            placeholder="Min"
+                            placeholder={t.common.min}
                             className="w-20 h-9"
                         />
                         <ArrowRight className="h-3 w-3 text-[hsl(var(--muted-foreground))]" />
@@ -129,7 +132,7 @@ function FilterField({
                             onChange={(e) =>
                                 onChange({ ...(value as object ?? {}), max: e.target.value || undefined })
                             }
-                            placeholder="Max"
+                            placeholder={t.common.max}
                             className="w-20 h-9"
                         />
                     </div>
@@ -141,7 +144,7 @@ function FilterField({
                 <div className="flex flex-col gap-1.5">
                     <span className="text-xs font-medium text-[hsl(var(--muted-foreground))] flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {label} Period
+                        {label} {t.common.period}
                     </span>
                     <div className="flex items-center gap-2">
                         <Input
@@ -173,7 +176,7 @@ function FilterField({
                         label={label}
                         value={value as string ?? ""}
                         onChange={(e) => onChange(e.target.value || undefined)}
-                        placeholder={`Search ${label.toLowerCase()}…`}
+                        placeholder={`${t.common.search} (${label.toLowerCase()})`}
                         className="h-9"
                     />
                 </div>

@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-r
 import { Button } from "@/ui/Button";
 import { Select } from "@/ui/Select";
 import { cn } from "@/utils/cn";
+import { useI18n } from "@/core/i18n";
 
 interface PaginationProps {
     page: number;
@@ -22,10 +23,11 @@ export function Pagination({
     onPageChange,
     onPageSizeChange,
 }: PaginationProps) {
+    const { t } = useI18n();
     const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
     const end = Math.min(page * pageSize, total);
 
-    const pageSizeOpts = pageSizeOptions.map((s) => ({ label: `${s} / page`, value: s }));
+    const pageSizeOpts = pageSizeOptions.map((s) => ({ label: `${s} / ${t.common.per_page}`, value: s }));
 
     // Generate page buttons (at most 7)
     const pages = generatePageRange(page, totalPages);
@@ -36,17 +38,17 @@ export function Pagination({
             <p className="text-sm text-[hsl(var(--muted-foreground))] whitespace-nowrap">
                 {total > 0 ? (
                     <>
-                        Showing <span className="font-medium text-[hsl(var(--foreground))]">{start}–{end}</span> of{" "}
-                        <span className="font-medium text-[hsl(var(--foreground))]">{total}</span> results
+                        {t.common.showing} <span className="font-medium text-[hsl(var(--foreground))]">{start}–{end}</span> {t.common.of}{" "}
+                        <span className="font-medium text-[hsl(var(--foreground))]">{total}</span> {t.common.results}
                     </>
                 ) : (
-                    "No results"
+                    t.common.no_results
                 )}
             </p>
 
             {/* Right: page size + navigation */}
             <div className="flex items-center gap-3">
-                <div className="w-[120px]">
+                <div className="w-[140px]">
                     <Select
                         options={pageSizeOpts}
                         value={pageSize}
@@ -60,7 +62,7 @@ export function Pagination({
                         onClick={() => onPageChange(1)}
                         disabled={page <= 1}
                         className="h-8 w-8"
-                        title="First page"
+                        title={t.common.first_page}
                     >
                         <ChevronsLeft className="h-4 w-4" />
                     </Button>
@@ -70,7 +72,7 @@ export function Pagination({
                         onClick={() => onPageChange(page - 1)}
                         disabled={page <= 1}
                         className="h-8 w-8"
-                        title="Previous page"
+                        title={t.common.prev_page}
                     >
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
@@ -95,7 +97,7 @@ export function Pagination({
                         onClick={() => onPageChange(page + 1)}
                         disabled={page >= totalPages}
                         className="h-8 w-8"
-                        title="Next page"
+                        title={t.common.next_page}
                     >
                         <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -105,7 +107,7 @@ export function Pagination({
                         onClick={() => onPageChange(totalPages)}
                         disabled={page >= totalPages}
                         className="h-8 w-8"
-                        title="Last page"
+                        title={t.common.last_page}
                     >
                         <ChevronsRight className="h-4 w-4" />
                     </Button>
